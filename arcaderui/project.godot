@@ -12,6 +12,7 @@ config_version=5
 
 config/name="arcaderui"
 config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/fullsize=false
 boot_splash/image="uid://c4d5v0feafg1q"
 config/icon="uid://c4d5v0feafg1q"
 
