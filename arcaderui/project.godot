@@ -14,7 +14,7 @@ config/name="arcaderui"
 run/main_scene="uid://dvixy6d18px4f"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/fullsize=false
-boot_splash/image="uid://c4d5v0feafg1q"
+boot_splash/image="uid://otgvq38r1ita"
 config/icon="uid://c4d5v0feafg1q"
 
 [autoload]
