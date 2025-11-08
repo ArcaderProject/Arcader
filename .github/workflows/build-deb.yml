@@ -1,0 +1,61 @@
+name: Build Debian Package
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install Godot
+      run: |
+        wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
+        unzip -q Godot_v4.5.1-stable_linux.x86_64.zip
+        chmod +x Godot_v4.5.1-stable_linux.x86_64
+        sudo mv Godot_v4.5.1-stable_linux.x86_64 /usr/local/bin/godot
+
+    - name: Make scripts executable
+      run: chmod +x scripts/*.sh
+
+    - name: Build components
+      run: ./scripts/build-components.sh
+
+    - name: Setup package structure
+      run: ./scripts/setup-package-structure.sh
+
+    - name: Create system files
+      run: ./scripts/create-system-files.sh
+
+    - name: Create Debian control files
+      run: ./scripts/create-debian-files.sh
+
+    - name: Build .deb package
+      run: ./scripts/build-deb.sh
+
+    - name: Upload .deb package
+      uses: actions/upload-artifact@v4
+      with:
+        name: arcader-deb-package
+        path: "*.deb"
+        retention-days: 30
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "*.deb"
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
