@@ -1,1 +1,5 @@
-console.log("Hello from arcader daemon");
+import { startDaemonSocket } from "./daemon/DaemonSocket.js";
+import { startServer } from "./api/index.js";
+
+startDaemonSocket();
+startServer();

@@ -5,5 +5,8 @@
     "@types/bun": "latest"
   },
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
 }
