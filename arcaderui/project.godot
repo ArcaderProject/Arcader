@@ -11,12 +11,23 @@ config_version=5
 [application]
 
 config/name="arcaderui"
+run/main_scene="uid://dvixy6d18px4f"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/fullsize=false
 boot_splash/image="uid://c4d5v0feafg1q"
 config/icon="uid://c4d5v0feafg1q"
 
+[autoload]
+
+Communicator="*res://api.gd"
+HealthChecker="*res://health_checker.gd"
+
+[gui]
+
+theme/custom_font="uid://du2b1m8q5c2n3"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)
