@@ -1,0 +1,9 @@
+[configuration]
+entry_symbol = "unixsocket_library_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+linux.debug.x86_64 = "res://addons/unix-socket/libunixsocket.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/unix-socket/libunixsocket.linux.release.x86_64.so"
+macos.debug = "libunixsocket.macos.debug.universal.dylib"
+macos.release = "libunixsocket.macos.release.universal.dylib"
