@@ -18,19 +18,12 @@ jobs:
       with:
         bun-version: latest
 
-    - name: Install Godot
-      run: |
-        wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
-        unzip -q Godot_v4.5.1-stable_linux.x86_64.zip
-        chmod +x Godot_v4.5.1-stable_linux.x86_64
-        sudo mv Godot_v4.5.1-stable_linux.x86_64 /usr/local/bin/godot
-
-    - name: Install Godot export templates
-      run: |
-        mkdir -p ~/.local/share/godot/export_templates/4.5.1.stable
-        wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_export_templates.tpz
-        unzip -q Godot_v4.5.1-stable_export_templates.tpz
-        cp templates/* ~/.local/share/godot/export_templates/4.5.1.stable/
+    - name: Setup Godot
+      uses: chickensoft-games/setup-godot@v2
+      with:
+        version: 4.5.1
+        use-dotnet: false
+        include-templates: true
 
     - name: Make scripts executable
       run: chmod +x scripts/*.sh
