@@ -1,0 +1,34 @@
+[gd_scene load_steps=2 format=3 uid="uid://dvixy6d18px4f"]
+
+[ext_resource type="Texture2D" uid="uid://crwtfrody0mss" path="res://assets/background.png" id="1_rx3dl"]
+
+[node name="Loading" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30.5
+offset_top = -41.0
+offset_right = 30.5
+offset_bottom = 41.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 64
+text = "..."
+
+[node name="Background" type="Sprite2D" parent="."]
+z_index = -4096
+scale = Vector2(0.3, 0.29999998)
+texture = ExtResource("1_rx3dl")
+centered = false
