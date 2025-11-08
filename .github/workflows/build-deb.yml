@@ -25,6 +25,13 @@ jobs:
         chmod +x Godot_v4.5.1-stable_linux.x86_64
         sudo mv Godot_v4.5.1-stable_linux.x86_64 /usr/local/bin/godot
 
+    - name: Install Godot export templates
+      run: |
+        mkdir -p ~/.local/share/godot/export_templates/4.5.1.stable
+        wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_export_templates.tpz
+        unzip -q Godot_v4.5.1-stable_export_templates.tpz
+        cp templates/* ~/.local/share/godot/export_templates/4.5.1.stable/
+
     - name: Make scripts executable
       run: chmod +x scripts/*.sh
 
