@@ -143,3 +143,6 @@ vite.config.ts.timestamp-*
 # code editors
 .idea
 .vscode
+
+# data directory
+arcaderd/data
