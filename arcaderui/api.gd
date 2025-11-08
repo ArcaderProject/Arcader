@@ -10,35 +10,23 @@ var connected := false
 var thread: Thread
 var mutex: Mutex
 var exit_thread := false
-var reconnect_timer: Timer
-var reconnect_attempts := 0
-var reconnect_delay := 2.0
+var ping_timer: Timer
 var last_ping_time := 0.0
 var ping_timeout := 5.0
-var ping_timer: Timer
-var ping_interval := 3.0
 
 func _ready() -> void:
 	stream = StreamPeerUnix.new()
 	mutex = Mutex.new()
 	thread = Thread.new()
 	
-	reconnect_timer = Timer.new()
-	reconnect_timer.wait_time = reconnect_delay
-	reconnect_timer.one_shot = true
-	reconnect_timer.timeout.connect(_attempt_reconnect)
-	add_child(reconnect_timer)
-	
 	ping_timer = Timer.new()
-	ping_timer.wait_time = ping_interval
+	ping_timer.wait_time = 3.0
 	ping_timer.timeout.connect(_send_ping)
 	add_child(ping_timer)
-
+	
 	connect_to_daemon()
 	if connected:
 		thread.start(_thread_read_loop)
-	else:
-		_start_reconnect_attempts()
 
 func get_socket_path() -> String:
 	var xdg_runtime = OS.get_environment("XDG_RUNTIME_DIR")
@@ -110,37 +98,21 @@ func _handle_connection_loss() -> void:
 	mutex.unlock()
 	
 	if was_connected:
-		ping_timer.stop()
+		call_deferred("_stop_ping_timer")
 		call_deferred("emit_signal", "connection_lost")
-		_start_reconnect_attempts()
 
 func _send_ping() -> void:
 	send_message({"type": "HELLO"})
 
-func _handle_connection_restored() -> void:
-	mutex.lock()
-	var was_disconnected = not connected
-	connected = true
-	mutex.unlock()
-	
-	if was_disconnected:
-		call_deferred("emit_signal", "connection_restored")
-		reconnect_attempts = 0
-		last_ping_time = Time.get_ticks_msec() / 1000.0
-		ping_timer.start()
+func _stop_ping_timer() -> void:
+	ping_timer.stop()
 
-func _start_reconnect_attempts() -> void:
-	call_deferred("_start_timer")
+func _start_ping_timer() -> void:
+	ping_timer.start()
 
-func _start_timer() -> void:
-	reconnect_timer.start()
-
-func _attempt_reconnect() -> void:
-	reconnect_attempts += 1
-	
+func attempt_reconnect() -> void:
 	var socket_path = get_socket_path()
 	if socket_path == "":
-		call_deferred("_start_timer")
 		return
 	
 	if stream.is_open():
@@ -153,8 +125,19 @@ func _attempt_reconnect() -> void:
 			exit_thread = false
 			thread = Thread.new()
 			thread.start(_thread_read_loop)
-	else:
-		call_deferred("_start_timer")
+
+func _handle_connection_restored() -> void:
+	mutex.lock()
+	var was_disconnected = not connected
+	connected = true
+	mutex.unlock()
+	
+	if was_disconnected:
+		call_deferred("emit_signal", "connection_restored")
+		last_ping_time = Time.get_ticks_msec() / 1000.0
+		call_deferred("_start_ping_timer")
+
+
 
 func _thread_read_loop(_userdata = null) -> void:
 	while true:
