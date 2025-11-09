@@ -43,8 +43,10 @@ export const UploadDialog = ({
                 <Dialog.Header>UPLOAD ROM</Dialog.Header>
                 <div className="p-6 space-y-4">
                     <div
-                        className={`border-4 border-dashed rounded-lg p-8 text-center transition-colors ${
-                            isDragging ? "border-primary bg-primary/10" : "border-muted"
+                        className={`flex flex-col items-center border-4 border-dashed rounded-lg p-8 text-center transition-colors ${
+                            isDragging
+                                ? "border-primary bg-primary/10"
+                                : "border-muted"
                         }`}
                         onDragOver={(e) => {
                             e.preventDefault();
@@ -58,7 +60,9 @@ export const UploadDialog = ({
                             {isDragging ? "DROP FILE HERE" : "SELECT ROM FILE"}
                         </p>
                         <p className="text-sm text-muted-foreground mb-4">
-                            {isDragging ? "Release to upload" : "Drag and drop or click to browse"}
+                            {isDragging
+                                ? "Release to upload"
+                                : "Drag and drop or click to browse"}
                         </p>
                         <input
                             ref={fileInputRef}
@@ -67,7 +71,10 @@ export const UploadDialog = ({
                             className="hidden"
                             id="rom-upload"
                         />
-                        <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+                        <Button
+                            variant="secondary"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
                             CHOOSE FILE
                         </Button>
                     </div>

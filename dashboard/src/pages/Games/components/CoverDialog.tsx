@@ -46,8 +46,10 @@ export const CoverDialog = ({
                 <Dialog.Header>UPLOAD COVER ART</Dialog.Header>
                 <div className="p-6 space-y-4">
                     <div
-                        className={`border-4 border-dashed rounded-lg p-8 text-center transition-colors ${
-                            isDragging ? "border-primary bg-primary/10" : "border-muted"
+                        className={`flex flex-col items-center border-4 border-dashed rounded-lg p-8 text-center transition-colors ${
+                            isDragging
+                                ? "border-primary bg-primary/10"
+                                : "border-muted"
                         }`}
                         onDragOver={(e) => {
                             e.preventDefault();
@@ -58,10 +60,14 @@ export const CoverDialog = ({
                     >
                         <ImageIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="font-head mb-2">
-                            {isDragging ? "DROP IMAGE HERE" : "SELECT COVER IMAGE"}
+                            {isDragging
+                                ? "DROP IMAGE HERE"
+                                : "SELECT COVER IMAGE"}
                         </p>
                         <p className="text-sm text-muted-foreground mb-4">
-                            {isDragging ? "Release to upload" : "Drag and drop or click to browse"}
+                            {isDragging
+                                ? "Release to upload"
+                                : "Drag and drop or click to browse"}
                         </p>
                         <input
                             ref={coverInputRef}
@@ -71,7 +77,10 @@ export const CoverDialog = ({
                             className="hidden"
                             id="cover-upload"
                         />
-                        <Button variant="secondary" onClick={() => coverInputRef.current?.click()}>
+                        <Button
+                            variant="secondary"
+                            onClick={() => coverInputRef.current?.click()}
+                        >
                             CHOOSE FILE
                         </Button>
                     </div>
