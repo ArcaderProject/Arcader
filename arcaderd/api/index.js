@@ -1,6 +1,7 @@
 import express from "express";
 import healthRouter from "./routes/healthRouter.js";
 import gamesRouter from "./routes/gamesRouter.js";
+import gameListsRouter from "./routes/gameListsRouter.js";
 
 const app = express();
 const SERVER_PORT = 5328;
@@ -36,6 +37,7 @@ apiRouter.post("/login", (req, res) => {
 
 apiRouter.use("/health", authenticateRequest, healthRouter);
 apiRouter.use("/games", authenticateRequest, gamesRouter);
+apiRouter.use("/lists", authenticateRequest, gameListsRouter);
 
 app.use("/api", apiRouter);
 

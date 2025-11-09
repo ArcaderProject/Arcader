@@ -3,6 +3,7 @@ import fs from "fs";
 import crypto from "crypto";
 import { findCoreByExtension } from "./emulationUtils.js";
 import { getDatabase } from "./databaseUtils.js";
+import { getSelectedListId } from "./configUtils.js";
 
 const enrichGameWithConsole = (game) => {
     if (!game) return null;
@@ -52,6 +53,29 @@ export const getAllGames = () => {
     const games = stmt.all();
 
     return games.map(enrichGameWithConsole);
+};
+
+export const getFilteredGames = () => {
+    const db = getDatabase();
+
+    const selectedListId = getSelectedListId();
+
+    const listStmt = db.prepare(`SELECT * FROM game_lists WHERE id = ?`);
+    const list = listStmt.get(selectedListId);
+
+    if (!list) return getAllGames();
+
+    const itemsStmt = db.prepare(`SELECT game_id FROM game_list_items WHERE list_id = ?`);
+    const items = itemsStmt.all(selectedListId);
+    const listGameIds = new Set(items.map((item) => item.game_id));
+
+    const allGames = getAllGames();
+
+    if (list.type === "include") {
+        return allGames.filter((game) => listGameIds.has(game.id));
+    } else {
+        return allGames.filter((game) => !listGameIds.has(game.id));
+    }
 };
 
 export const getGameById = (gameId) => {
