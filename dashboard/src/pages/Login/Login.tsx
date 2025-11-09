@@ -1,28 +1,39 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Card } from "@/components/retroui/Card";
 import { Button } from "@/components/retroui/Button";
 import { Input } from "@/components/retroui/Input";
-import { User, Lock, LogIn } from "lucide-react";
+import { Lock, LogIn } from "lucide-react";
 import banner from "@/common/assets/banner.png";
+import { AuthContext } from "@/common/contects/AuthProvider";
 
 export const Login = () => {
-    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const { login } = useContext(AuthContext);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setTimeout(() => setIsLoading(false), 1500);
+        setError("");
+
+        try {
+            await login(password);
+        } catch (err) {
+            setError("Invalid password");
+            console.error("Login failed:", err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
             <div className="w-full max-w-md flex flex-col items-center justify-center">
                 <div className="text-center mb-8 w-full">
-                    <img 
-                        src={banner} 
-                        alt="Arcader" 
+                    <img
+                        src={banner}
+                        alt="Arcader"
                         className="mx-auto max-w-full h-auto"
                     />
                 </div>
@@ -30,23 +41,6 @@ export const Login = () => {
                 <Card className="border-4 border-foreground bg-card overflow-hidden w-full">
                     <Card.Content className="space-y-4 p-6">
                         <form onSubmit={handleLogin} className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-head font-semibold text-foreground">
-                                    USERNAME
-                                </label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                    <Input
-                                        type="text"
-                                        placeholder="Enter username"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        className="font-sans pl-11 bg-background"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
                             <div className="space-y-2">
                                 <label className="text-sm font-head font-semibold text-foreground">
                                     PASSWORD
@@ -57,11 +51,18 @@ export const Login = () => {
                                         type="password"
                                         placeholder="Enter password"
                                         value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
+                                        onChange={(e) =>
+                                            setPassword(e.target.value)
+                                        }
                                         className="font-sans pl-11 bg-background"
                                         required
                                     />
                                 </div>
+                                {error && (
+                                    <p className="text-sm text-red-500 font-semibold">
+                                        {error}
+                                    </p>
+                                )}
                             </div>
 
                             <Button
@@ -86,4 +87,4 @@ export const Login = () => {
             </div>
         </div>
     );
-}
+};
