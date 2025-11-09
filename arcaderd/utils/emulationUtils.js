@@ -57,10 +57,7 @@ const loadCoresData = () => {
                 const coreName = infoFile.replace("_libretro.info", "_libretro.so");
                 const coreFilePath = path.join(coresDir, coreName);
 
-                if (!fs.existsSync(coreFilePath)) {
-                    console.log(`Skipping ${coreName} - file not found in cores directory`);
-                    continue;
-                }
+                if (!fs.existsSync(coreFilePath)) continue;
 
                 const extensions = data.supported_extensions
                     .split(/[|,]/)
