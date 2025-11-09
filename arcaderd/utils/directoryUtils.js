@@ -1,5 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { getSystemArchitecture } from "./downloadUtils.js";
+
+export const getRetroArchAppImageName = (arch = getSystemArchitecture()) => 
+    `RetroArch-Linux-${arch}.AppImage`;
+
+export const getRetroArchHomeDirName = (arch = getSystemArchitecture()) => 
+    `RetroArch-Linux-${arch}.AppImage.home`;
 
 export const ensureDirectoryExists = (dirPath) => {
     if (!fs.existsSync(dirPath)) {
@@ -11,18 +18,23 @@ export const ensureDataDirectories = (workingDir = process.cwd()) => {
     const dataDir = path.join(workingDir, "data");
     const retroarchDir = path.join(dataDir, "retroarch");
     const coresDir = path.join(dataDir, "cores");
+    const romsDir = path.join(dataDir, "roms");
+    const coversDir = path.join(dataDir, "covers");
 
     ensureDirectoryExists(dataDir);
     ensureDirectoryExists(retroarchDir);
     ensureDirectoryExists(coresDir);
+    ensureDirectoryExists(romsDir);
+    ensureDirectoryExists(coversDir);
 
-    return { dataDir, retroarchDir, coresDir };
+    return { dataDir, retroarchDir, coresDir, romsDir, coversDir };
 };
 
-export const isRetroArchInstalled = (retroarchDir) => {
-    const AppImage = path.join(retroarchDir, "RetroArch-Linux-x86_64.AppImage");
-    const HomeDir = path.join(retroarchDir, "RetroArch-Linux-x86_64.AppImage.home");
-    return fs.existsSync(AppImage) && fs.existsSync(HomeDir);
+export const isRetroArchInstalled = () => {
+    const retroarchDir = path.join(".", "data", "retroarch");
+    const retroarchAppImage = path.join(retroarchDir, getRetroArchAppImageName());
+    
+    return fs.existsSync(retroarchAppImage);
 };
 
 export const areCoresInstalled = (coresDir) => {

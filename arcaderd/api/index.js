@@ -1,5 +1,6 @@
 import express from "express";
 import healthRouter from "./routes/healthRouter.js";
+import gamesRouter from "./routes/gamesRouter.js";
 
 const app = express();
 const SERVER_PORT = 5328;
@@ -34,6 +35,7 @@ apiRouter.post("/login", (req, res) => {
 });
 
 apiRouter.use("/health", authenticateRequest, healthRouter);
+apiRouter.use("/games", authenticateRequest, gamesRouter);
 
 app.use("/api", apiRouter);
 

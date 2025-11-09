@@ -8,6 +8,7 @@
   "type": "module",
   "dependencies": {
     "express": "^5.1.0",
+    "multer": "^2.0.2",
     "node-7z": "^3.0.0",
     "terminate": "^2.8.0"
   }

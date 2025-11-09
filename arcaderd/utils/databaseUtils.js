@@ -1,7 +1,7 @@
-import {Database} from "bun:sqlite";
+import { Database } from "bun:sqlite";
 import path from "path";
-import {ensureDataDirectories} from "./directoryUtils.js";
-import {migrations} from "../migrations";
+import { ensureDataDirectories } from "./directoryUtils.js";
+import { migrations } from "../migrations";
 
 const DATABASE_PATH = path.join(process.cwd(), "data", "app.db");
 
@@ -26,7 +26,7 @@ export const runMigrations = () => {
     ensureMigrationsTable();
 
     const appliedRows = db.query("SELECT id FROM migrations").all();
-    const appliedMigrations = new Set(appliedRows.map(row => row.id));
+    const appliedMigrations = new Set(appliedRows.map((row) => row.id));
 
     for (const migration of migrations) {
         const migrationId = migration.id;
@@ -44,3 +44,5 @@ export const runMigrations = () => {
         db.run(`INSERT INTO migrations (id) VALUES (?);`, migrationId);
     }
 };
+
+export const getDatabase = () => db;
