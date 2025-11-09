@@ -1,9 +1,19 @@
-import { Loader } from "@/components/retroui/Loader";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import Root from "@/common/layouts/Root.jsx";
 
-export const App = () => {
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <Loader className="scale-[3]" />
-    </div>
-  )
-}
+const App = () => {
+    const router = createBrowserRouter([
+        {
+            path: "/",
+            element: <Root />,
+            children: [
+                { path: "/", element: <Navigate to="/start" /> },
+                { path: "/start", element: <h1>Start</h1> },
+            ],
+        },
+    ]);
+
+    return <RouterProvider router={router}/>;
+};
+
+export default App;
