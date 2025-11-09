@@ -142,3 +142,16 @@ export const getCoverArtPath = (gameId) => {
 
     return null;
 };
+
+export const getCoverArtBase64 = (gameId) => {
+    const coverPath = getCoverArtPath(gameId);
+    if (!coverPath) return null;
+
+    try {
+        const imageBuffer = fs.readFileSync(coverPath);
+        return imageBuffer.toString("base64");
+    } catch (error) {
+        console.error(`Error reading cover art for game ${gameId}:`, error);
+        return null;
+    }
+};

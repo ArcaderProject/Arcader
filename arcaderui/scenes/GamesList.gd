@@ -4,7 +4,7 @@ extends Control
 @onready var loading_label: Label = %LoadingLabel
 @onready var error_label: Label = %ErrorLabel
 
-var game_buttons: Array[Button] = []
+var game_items: Array = []
 var selected_index: int = 0
 
 func _ready() -> void:
@@ -17,7 +17,7 @@ func _ready() -> void:
 	Communicator.get_games()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if game_buttons.is_empty():
+	if game_items.is_empty():
 		return
 	
 	if event.is_action_pressed("ui_down"):
@@ -28,16 +28,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		_activate_selected()
 
 func _navigate_down() -> void:
-	selected_index = (selected_index + 1) % game_buttons.size()
-	game_buttons[selected_index].grab_focus()
+	selected_index = (selected_index + 1) % game_items.size()
+	_update_selection()
 
 func _navigate_up() -> void:
-	selected_index = (selected_index - 1 + game_buttons.size()) % game_buttons.size()
-	game_buttons[selected_index].grab_focus()
+	selected_index = (selected_index - 1 + game_items.size()) % game_items.size()
+	_update_selection()
+
+func _update_selection() -> void:
+	for i in range(game_items.size()):
+		var item = game_items[i]
+		if i == selected_index:
+			item.modulate = Color(1.5, 1.5, 1.5)
+		else:
+			item.modulate = Color(1, 1, 1)
 
 func _activate_selected() -> void:
-	if selected_index < game_buttons.size():
-		game_buttons[selected_index].emit_signal("pressed")
+	if selected_index < game_items.size():
+		var game = game_items[selected_index].get_meta("game_data")
+		_on_game_item_activated(game)
 
 func _on_games_received(games: Array) -> void:
 	loading_label.visible = false
@@ -46,7 +55,7 @@ func _on_games_received(games: Array) -> void:
 	for child in games_container.get_children():
 		child.queue_free()
 	
-	game_buttons.clear()
+	game_items.clear()
 	selected_index = 0
 	
 	if games.is_empty():
@@ -58,17 +67,47 @@ func _on_games_received(games: Array) -> void:
 		return
 	
 	for game in games:
-		var game_button = _create_game_button(game)
-		games_container.add_child(game_button)
-		game_buttons.append(game_button)
+		var game_item = _create_game_item(game)
+		games_container.add_child(game_item)
+		game_items.append(game_item)
 	
-	if not game_buttons.is_empty():
-		game_buttons[0].grab_focus()
+	if not game_items.is_empty():
+		_update_selection()
 
-func _create_game_button(game: Dictionary) -> Button:
-	var button = Button.new()
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+func _create_game_item(game: Dictionary) -> Control:
+	var container = HBoxContainer.new()
+	container.set_meta("game_data", game)
+	container.custom_minimum_size = Vector2(0, 90)
+	
+	var cover_rect = TextureRect.new()
+	cover_rect.custom_minimum_size = Vector2(80, 80)
+	cover_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	cover_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	
+	if game.get("cover_data"):
+		var image = Image.new()
+		var buffer = Marshalls.base64_to_raw(game["cover_data"])
+		
+		var error = image.load_png_from_buffer(buffer)
+		if error != OK:
+			error = image.load_jpg_from_buffer(buffer)
+		
+		if error == OK:
+			cover_rect.texture = ImageTexture.create_from_image(image)
+		else:
+			cover_rect.texture = _create_placeholder_texture()
+	else:
+		cover_rect.texture = _create_placeholder_texture()
+	
+	container.add_child(cover_rect)
+	
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(10, 0)
+	container.add_child(spacer)
+	
+	var label = Label.new()
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	
 	var text = ""
 	if game.has("console") and game["console"]:
@@ -79,14 +118,24 @@ func _create_game_button(game: Dictionary) -> Button:
 	if game.has("extension"):
 		text += " (." + game["extension"] + ")"
 	
-	button.text = text
-	button.add_theme_font_size_override("font_size", 20)
-	button.set_meta("game_data", game)
-	button.pressed.connect(_on_game_button_pressed.bind(game))
+	label.text = text
+	label.add_theme_font_size_override("font_size", 20)
 	
-	return button
+	container.add_child(label)
+	
+	return container
 
-func _on_game_button_pressed(game: Dictionary) -> void:
+func _create_placeholder_texture() -> ImageTexture:
+	var image = Image.create(80, 80, false, Image.FORMAT_RGB8)
+	image.fill(Color(0.2, 0.2, 0.2))
+	
+	for x in range(10, 70):
+		for y in range(10, 70):
+			image.set_pixel(x, y, Color(0.3, 0.3, 0.3))
+	
+	return ImageTexture.create_from_image(image)
+
+func _on_game_item_activated(game: Dictionary) -> void:
 	var game_id = game.get("id", "")
 	if not game_id:
 		return
