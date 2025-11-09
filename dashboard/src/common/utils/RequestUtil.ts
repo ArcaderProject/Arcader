@@ -31,7 +31,7 @@ export const sessionRequest = (
     url: string,
     method: string,
     token: string | null,
-    body: object | undefined = {},
+    body: object | undefined = undefined,
 ) => {
     return request(url, method, body, { Authorization: `Bearer ${token}` });
 };
