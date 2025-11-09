@@ -4,6 +4,7 @@ import {
     RouterProvider,
 } from "react-router-dom";
 import Root from "@/common/layouts/Root.jsx";
+import { Games } from "@/pages/Games/Games";
 
 const App = () => {
     const router = createBrowserRouter([
@@ -12,7 +13,7 @@ const App = () => {
             element: <Root />,
             children: [
                 { path: "/", element: <Navigate to="/games" /> },
-                { path: "/games", element: <h1>Games</h1> },
+                { path: "/games", element: <Games /> },
                 { path: "/settings", element: <h1>Settings</h1> },
             ],
         },

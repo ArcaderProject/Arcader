@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { Suspense } from "react";
 import {Navigation} from "@/common/components/Navigation.tsx";
 import {Loader} from "@/common/components/Loader.tsx";
+import {Toaster} from "@/components/retroui/Sonner.tsx";
 
 
 export default () => {
@@ -13,6 +14,7 @@ export default () => {
                     <Outlet />
                 </main>
             </Suspense>
+            <Toaster />
         </div>
     );
 }
