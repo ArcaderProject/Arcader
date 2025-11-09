@@ -12,6 +12,17 @@ const SOCKET_PATH = path.join(process.env.XDG_RUNTIME_DIR, ARCADER_SOCKET_NAME);
 let server = null;
 const clients = new Map();
 
+export const broadcastToAll = (message) => {
+    const messageStr = JSON.stringify(message) + "\n";
+    clients.forEach((client) => {
+        try {
+            client.write(messageStr);
+        } catch (error) {
+            console.error("Error broadcasting to client:", error);
+        }
+    });
+};
+
 export const sendResponse = (socket, response) => {
     try {
         const jsonResponse = JSON.stringify(response) + "\n";

@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import terminate from "terminate";
 import { getRetroArchAppImageName, getRetroArchHomeDirName } from "./directoryUtils.js";
+import { broadcastUpdateScreen } from "../daemon/handlers/startGameHandler.js";
 
 let currentPid = null;
 let currentGame = null;
@@ -151,12 +152,23 @@ export const startEmulator = (core, gameFile, gameInfo = null) => {
     proc.on("close", (code) => {
         console.log(`Emulator exited with code ${code}`);
         stop();
+        broadcastScreen("SELECTION");
     });
 
     currentPid = proc.pid;
     currentGame = gameInfo;
 
+    broadcastScreen("LOADING");
+
     return true;
+};
+
+const broadcastScreen = (screen) => {
+    try {
+        broadcastUpdateScreen(screen);
+    } catch (error) {
+        console.error("Error broadcasting screen update:", error);
+    }
 };
 
 export const start = (gameFile, gameInfo = null) => {
