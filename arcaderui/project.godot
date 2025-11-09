@@ -19,8 +19,9 @@ config/icon="uid://c4d5v0feafg1q"
 
 [autoload]
 
-Communicator="*res://api.gd"
+Communicator="*res://communicator.gd"
 HealthChecker="*res://health_checker.gd"
+ScreenManager="*res://screen_manager.gd"
 
 [gui]
 
