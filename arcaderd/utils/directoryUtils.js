@@ -10,11 +10,13 @@ export const ensureDirectoryExists = (dirPath) => {
 export const ensureDataDirectories = (workingDir = process.cwd()) => {
     const dataDir = path.join(workingDir, "data");
     const retroarchDir = path.join(dataDir, "retroarch");
+    const coresDir = path.join(dataDir, "cores");
 
     ensureDirectoryExists(dataDir);
     ensureDirectoryExists(retroarchDir);
+    ensureDirectoryExists(coresDir);
 
-    return { dataDir, retroarchDir };
+    return { dataDir, retroarchDir, coresDir };
 };
 
 export const isRetroArchInstalled = (retroarchDir) => {
@@ -23,8 +25,15 @@ export const isRetroArchInstalled = (retroarchDir) => {
     return fs.existsSync(AppImage) && fs.existsSync(HomeDir);
 };
 
-export const getRetroArchExecutablePath = (retroarchDir) => {
-    return path.join(retroarchDir, "RetroArch-Linux-x86_64.AppImage");
+export const areCoresInstalled = (coresDir) => {
+    if (!fs.existsSync(coresDir)) {
+        return false;
+    }
+
+    const files = fs.readdirSync(coresDir);
+    const coreFiles = files.filter(file => file.endsWith('_libretro.so'));
+    
+    return coreFiles.length > 0;
 };
 
 export const moveDirectoryContents = (sourceDir, targetDir) => {

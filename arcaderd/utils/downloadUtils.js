@@ -11,6 +11,9 @@ export const getSystemArchitecture = () => (os.arch() === "x64" ? "x86_64" : "x8
 export const buildRetroArchUrl = (version = RETROARCH_VERSION, arch = getSystemArchitecture()) =>
     `https://buildbot.libretro.com/stable/${version}/linux/${arch}/RetroArch.7z`;
 
+export const buildRetroArchCoresUrl = (version = RETROARCH_VERSION, arch = getSystemArchitecture()) =>
+    `https://buildbot.libretro.com/stable/${version}/linux/${arch}/RetroArch_cores.7z`;
+
 export const downloadFile = (url, outputPath) => {
     return new Promise((resolve, reject) => {
         console.log(`Downloading: ${url}`);
