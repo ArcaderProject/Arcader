@@ -17,8 +17,8 @@ export const Navigation = () => {
 
     return (
         <nav className="w-full bg-[#0a0a0a] border-b border-primary/50">
-            <div className="flex items-center justify-between px-4 md:px-8 py-4">
-                <div className="py-2">
+            <div className="flex items-center px-4 md:px-8 py-4">
+                <div className="py-2 flex-shrink-0">
                     <img
                         src={banner}
                         alt="Arcader"
@@ -26,15 +26,17 @@ export const Navigation = () => {
                     />
                 </div>
 
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-4 flex-1 justify-center">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.to}
                             to={item.to}
                             className={({ isActive }) =>
                                 cn(
-                                    "flex items-center gap-2 px-6 py-2 font-head text-sm font-normal transition-all border border-transparent text-foreground/70 hover:text-primary hover:border-primary/30",
-                                    isActive && "text-primary border-primary",
+                                    "flex items-center gap-2 px-4 py-2 font-head text-sm font-normal transition-all duration-200 bg-secondary border-2 border-border",
+                                    isActive 
+                                        ? "text-primary-foreground bg-primary shadow-md translate-y-0" 
+                                        : "text-foreground hover:translate-y-1 shadow-sm hover:shadow-none active:translate-y-1",
                                 )
                             }
                         >
@@ -51,7 +53,7 @@ export const Navigation = () => {
                 <Button
                     variant="secondary"
                     size="sm"
-                    className="hidden md:flex gap-2 uppercase font-bold"
+                    className="hidden md:flex gap-2 uppercase font-bold flex-shrink-0 ml-auto"
                     onClick={logout}
                 >
                     <LogOut className="w-4 h-4" />
@@ -72,7 +74,7 @@ export const Navigation = () => {
             </div>
 
             {isMobileMenuOpen && (
-                <div className="md:hidden border-t border-primary/30 bg-[#0a0a0a] px-4 py-4 space-y-1">
+                <div className="md:hidden border-t-2 border-border bg-[#0a0a0a] px-4 py-4 space-y-2">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.to}
@@ -80,8 +82,10 @@ export const Navigation = () => {
                             onClick={() => setIsMobileMenuOpen(false)}
                             className={({ isActive }) =>
                                 cn(
-                                    "flex items-center gap-3 px-4 py-3 font-head text-base font-normal transition-all text-foreground/70 hover:text-primary hover:bg-primary/5 w-full uppercase tracking-wider",
-                                    isActive && "text-primary bg-primary/10",
+                                    "flex items-center gap-3 px-4 py-3 font-head text-base font-normal transition-all duration-200 w-full uppercase tracking-wider bg-secondary border-2 border-border",
+                                    isActive 
+                                        ? "text-primary-foreground bg-primary shadow-md" 
+                                        : "text-foreground active:translate-y-1 shadow-sm active:shadow-none",
                                 )
                             }
                         >
@@ -91,15 +95,17 @@ export const Navigation = () => {
                             </>
                         </NavLink>
                     ))}
-                    <Button
-                        variant="secondary"
-                        size="md"
-                        className="w-full gap-2 uppercase font-bold mt-4 border-t border-primary/30 pt-4"
-                        onClick={logout}
-                    >
-                        <LogOut className="w-5 h-5" />
-                        LOGOUT
-                    </Button>
+                    <div className="pt-2 mt-2 border-t-2 border-border">
+                        <Button
+                            variant="secondary"
+                            size="md"
+                            className="w-full gap-2 uppercase font-bold"
+                            onClick={logout}
+                        >
+                            <LogOut className="w-5 h-5" />
+                            LOGOUT
+                        </Button>
+                    </div>
                 </div>
             )}
         </nav>
