@@ -15,6 +15,7 @@ interface ConfigContextType {
     config: Config | null;
     loading: boolean;
     updateConfig: (updates: Partial<Config>) => Promise<void>;
+    updatePassword: (newPassword: string) => Promise<string>;
     refreshConfig: () => Promise<void>;
 }
 
@@ -22,6 +23,7 @@ export const ConfigContext = createContext<ConfigContextType>({
     config: null,
     loading: true,
     updateConfig: async () => {},
+    updatePassword: async () => "",
     refreshConfig: async () => {},
 });
 
@@ -54,6 +56,26 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const updatePassword = async (newPassword: string) => {
+        try {
+            const response = await putRequest("config/password", {
+                newPassword,
+            });
+
+            if (response.token) {
+                localStorage.setItem("sessionToken", response.token);
+                toast.success("Password updated successfully!");
+                return response.token;
+            }
+
+            throw new Error("No token received");
+        } catch (error) {
+            console.error("Failed to update password:", error);
+            toast.error("Failed to update password");
+            throw error;
+        }
+    };
+
     useEffect(() => {
         fetchConfig();
     }, []);
@@ -64,6 +86,7 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
                 config,
                 loading,
                 updateConfig,
+                updatePassword,
                 refreshConfig: fetchConfig,
             }}
         >

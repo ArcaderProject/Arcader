@@ -1,4 +1,5 @@
 import { getDatabase } from "./databaseUtils.js";
+import crypto from "crypto";
 
 const CONFIG_DEFAULTS = {
     "coinScreen.insertMessage": "INSERT COIN",
@@ -6,6 +7,29 @@ const CONFIG_DEFAULTS = {
     "coinScreen.konamiCodeEnabled": "false",
     "coinScreen.coinSlotEnabled": "true",
     steamGridDbApiKey: null,
+};
+
+const generateRandomPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const length = 16;
+    let password = "";
+    const randomBytes = crypto.randomBytes(length);
+
+    for (let i = 0; i < length; i++) {
+        password += chars[randomBytes[i] % chars.length];
+    }
+
+    return password;
+};
+
+export const initializeAdminPassword = () => {
+    if (!hasConfig("admin.password")) {
+        const password = generateRandomPassword();
+        setConfig("admin.password", password);
+        console.log("Generated admin password:", password);
+        return password;
+    }
+    return getConfig("admin.password");
 };
 
 export const getConfig = (key, defaultValue = null) => {

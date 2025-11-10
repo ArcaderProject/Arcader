@@ -56,4 +56,22 @@ router.put("/", (req, res) => {
     }
 });
 
+router.put("/password", (req, res) => {
+    try {
+        const { newPassword } = req.body;
+
+        if (!newPassword || !newPassword.trim()) {
+            return res.status(400).json({ error: "Invalid password" });
+        }
+
+        const password = newPassword.trim();
+        setConfig("admin.password", password);
+
+        res.json({ success: true, token: password });
+    } catch (error) {
+        console.error("Error updating password:", error);
+        res.status(500).json({ error: "Failed to update password" });
+    }
+});
+
 export default router;

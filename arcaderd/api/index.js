@@ -3,10 +3,10 @@ import healthRouter from "./routes/healthRouter.js";
 import gamesRouter from "./routes/gamesRouter.js";
 import gameListsRouter from "./routes/gameListsRouter.js";
 import configRouter from "./routes/configRouter.js";
+import { getConfig } from "../utils/configUtils.js";
 
 const app = express();
 const SERVER_PORT = 5328;
-const ADMIN_PASSWORD = "admin123"; // TODO: Chagne to be env variable
 
 const ignoreCORS = (req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -17,7 +17,9 @@ const ignoreCORS = (req, res, next) => {
 
 const authenticateRequest = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader || authHeader !== `Bearer ${ADMIN_PASSWORD}`) {
+    const currentPassword = getConfig('admin.password');
+    
+    if (!authHeader || authHeader !== `Bearer ${currentPassword}`) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     next();
@@ -29,8 +31,10 @@ app.use(ignoreCORS);
 const apiRouter = express.Router();
 
 apiRouter.post("/login", (req, res) => {
-    if (req.body?.password === ADMIN_PASSWORD) {
-        res.json({ token: ADMIN_PASSWORD });
+    const currentPassword = getConfig('admin.password');
+    
+    if (req.body?.password === currentPassword) {
+        res.json({ token: currentPassword });
     } else {
         res.status(401).json({ error: "Invalid password" });
     }

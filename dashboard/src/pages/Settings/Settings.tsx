@@ -10,11 +10,12 @@ import {
 import { Input } from "@/components/retroui/Input";
 import { Switch } from "@/components/retroui/Switch";
 import { Button } from "@/components/retroui/Button";
-import { Save } from "lucide-react";
+import { Save, Key, RefreshCw, Copy, Check } from "lucide-react";
 import arcadeMachine from "@/common/assets/arcade-machine.png";
 
 export const Settings = () => {
-    const { config, loading, updateConfig } = useContext(ConfigContext);
+    const { config, loading, updateConfig, updatePassword } =
+        useContext(ConfigContext);
 
     const [formData, setFormData] = useState({
         insertMessage: "",
@@ -22,9 +23,12 @@ export const Settings = () => {
         konamiCodeEnabled: false,
         coinSlotEnabled: true,
         steamGridDbApiKey: "",
+        password: "",
     });
 
     const [isSaving, setIsSaving] = useState(false);
+    const [passwordStrength, setPasswordStrength] = useState(0);
+    const [copiedPassword, setCopiedPassword] = useState(false);
 
     useEffect(() => {
         if (config) {
@@ -35,9 +39,26 @@ export const Settings = () => {
                     config["coinScreen.konamiCodeEnabled"] || false,
                 coinSlotEnabled: config["coinScreen.coinSlotEnabled"] ?? true,
                 steamGridDbApiKey: config["steamGridDbApiKey"] || "",
+                password: "",
             });
         }
     }, [config]);
+
+    useEffect(() => {
+        if (!formData.password) {
+            setPasswordStrength(0);
+            return;
+        }
+
+        let strength = 0;
+        if (formData.password.length >= 6) strength += 30;
+        if (formData.password.length >= 10) strength += 20;
+        if (/[a-z]/.test(formData.password)) strength += 15;
+        if (/[A-Z]/.test(formData.password)) strength += 15;
+        if (/[0-9]/.test(formData.password)) strength += 20;
+
+        setPasswordStrength(Math.min(strength, 100));
+    }, [formData.password]);
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -49,9 +70,48 @@ export const Settings = () => {
                 "coinScreen.coinSlotEnabled": formData.coinSlotEnabled,
                 steamGridDbApiKey: formData.steamGridDbApiKey || null,
             });
+
+            if (formData.password.trim()) {
+                await updatePassword(formData.password);
+                setFormData({ ...formData, password: "" });
+            }
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleGeneratePassword = () => {
+        const chars =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const length = 16;
+        let password = "";
+
+        for (let i = 0; i < length; i++) {
+            password += chars[Math.floor(Math.random() * chars.length)];
+        }
+
+        setFormData({ ...formData, password });
+    };
+
+    const copyPasswordToClipboard = () => {
+        if (formData.password) {
+            navigator.clipboard.writeText(formData.password);
+            setCopiedPassword(true);
+            setTimeout(() => setCopiedPassword(false), 2000);
+        }
+    };
+
+    const getPasswordStrengthColor = () => {
+        if (passwordStrength < 40) return "bg-destructive";
+        if (passwordStrength < 70) return "bg-accent";
+        return "bg-primary";
+    };
+
+    const getPasswordStrengthLabel = () => {
+        if (passwordStrength === 0) return "";
+        if (passwordStrength < 40) return "WEAK";
+        if (passwordStrength < 70) return "MODERATE";
+        return "STRONG";
     };
 
     if (loading) {
@@ -83,6 +143,7 @@ export const Settings = () => {
                     <Tabs>
                         <TabsTriggerList className="mb-4">
                             <TabsTrigger>COIN SCREEN</TabsTrigger>
+                            <TabsTrigger>PASSWORD</TabsTrigger>
                             <TabsTrigger>INTEGRATIONS</TabsTrigger>
                         </TabsTriggerList>
 
@@ -170,6 +231,100 @@ export const Settings = () => {
                                                 })
                                             }
                                         />
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent>
+                                <div className="space-y-6">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <Key className="w-6 h-6 text-primary" />
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-head font-bold uppercase">
+                                                    Admin Password
+                                                </h3>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Change your admin dashboard
+                                                    password
+                                                </p>
+                                            </div>
+                                            <Button
+                                                onClick={handleGeneratePassword}
+                                                variant="outline"
+                                                className="gap-2"
+                                                size="sm"
+                                            >
+                                                <RefreshCw className="w-4 h-4" />
+                                                GENERATE
+                                            </Button>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-head font-bold mb-2 uppercase tracking-wider">
+                                                    New Password
+                                                </label>
+                                                <div className="flex gap-2">
+                                                    <Input
+                                                        type="text"
+                                                        value={
+                                                            formData.password
+                                                        }
+                                                        onChange={(e) =>
+                                                            setFormData({
+                                                                ...formData,
+                                                                password:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        placeholder="Enter new password"
+                                                        className="font-mono flex-1"
+                                                    />
+                                                    {formData.password && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={
+                                                                copyPasswordToClipboard
+                                                            }
+                                                            className="flex-shrink-0"
+                                                        >
+                                                            {copiedPassword ? (
+                                                                <Check className="w-4 h-4" />
+                                                            ) : (
+                                                                <Copy className="w-4 h-4" />
+                                                            )}
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                                {formData.password && (
+                                                    <div className="mt-2">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-xs font-head font-bold uppercase">
+                                                                Strength:{" "}
+                                                                {getPasswordStrengthLabel()}
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {
+                                                                    passwordStrength
+                                                                }
+                                                                %
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-2 bg-muted border-2 border-border">
+                                                            <div
+                                                                className={`h-full transition-all ${getPasswordStrengthColor()}`}
+                                                                style={{
+                                                                    width: `${passwordStrength}%`,
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </TabsContent>
