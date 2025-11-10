@@ -3,7 +3,8 @@ import fs from "fs";
 import crypto from "crypto";
 import { findCoreByExtension } from "./emulationUtils.js";
 import { getDatabase } from "./databaseUtils.js";
-import { getSelectedListId } from "./configUtils.js";
+import { getSelectedListId, hasConfig } from "./configUtils.js";
+import { downloadGameCover } from "./loaderUtils.js";
 
 const enrichGameWithConsole = (game) => {
     if (!game) return null;
@@ -43,6 +44,17 @@ export const addGame = (originalFilename, fileBuffer, gameName = null) => {
     stmt.run(gameId, name, filename, extension, core.core);
 
     const console = core.display_name || core.systemname || "";
+
+    if (hasConfig("steamGridDbApiKey")) {
+        downloadGameCover(name, gameId)
+            .then((success) => {
+                if (success) {
+                    const updateStmt = db.prepare("UPDATE roms SET cover_art = 1 WHERE id = ?");
+                    updateStmt.run(gameId);
+                }
+            })
+            .catch(() => {});
+    }
 
     return { id: gameId, name, filename, extension, core: core.core, console, cover_art: 0 };
 };

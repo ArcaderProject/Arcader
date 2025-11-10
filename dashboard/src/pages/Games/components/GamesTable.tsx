@@ -2,7 +2,7 @@ import { Table } from "@/components/retroui/Table";
 import { ContextMenu } from "@/components/retroui/ContextMenu";
 import { Button } from "@/components/retroui/Button";
 import { Card } from "@/components/retroui/Card";
-import { GamepadIcon, MoreVertical, Play, Pencil, Image as ImageIcon, Settings, Trash2 } from "lucide-react";
+import { GamepadIcon, MoreVertical, Play, Pencil, Image as ImageIcon, Settings, Trash2, Search } from "lucide-react";
 
 interface Game {
     id: string;
@@ -21,6 +21,7 @@ interface GamesTableProps {
     onRemoteStart: (game: Game) => void;
     onRename: (game: Game) => void;
     onUpdateCover: (game: Game) => void;
+    onLookupCover: (game: Game) => void;
     onChangeCore: (game: Game) => void;
     onDelete: (game: Game) => void;
 }
@@ -31,6 +32,7 @@ export const GamesTable = ({
     onRemoteStart,
     onRename,
     onUpdateCover,
+    onLookupCover,
     onChangeCore,
     onDelete,
 }: GamesTableProps) => (
@@ -50,7 +52,7 @@ export const GamesTable = ({
                         <ContextMenu.Trigger asChild>
                             <Table.Row className="cursor-pointer">
                                 <Table.Cell>
-                                    <div className="w-12 h-12 md:w-16 md:h-16 border-2 border-foreground bg-muted flex items-center justify-center overflow-hidden">
+                                    <div className="w-12 h-18 md:w-16 md:h-24 border-2 border-foreground bg-muted flex items-center justify-center overflow-hidden">
                                         {game.cover_art ? (
                                             <img
                                                 src={coverUrls[game.id] || ""}
@@ -100,6 +102,10 @@ export const GamesTable = ({
                             <ContextMenu.Item onClick={() => onUpdateCover(game)}>
                                 <ImageIcon className="w-4 h-4" />
                                 {game.cover_art ? "Update Cover" : "Upload Cover"}
+                            </ContextMenu.Item>
+                            <ContextMenu.Item onClick={() => onLookupCover(game)}>
+                                <Search className="w-4 h-4" />
+                                Lookup Cover
                             </ContextMenu.Item>
                             <ContextMenu.Item onClick={() => onChangeCore(game)}>
                                 <Settings className="w-4 h-4" />

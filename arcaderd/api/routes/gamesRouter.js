@@ -16,6 +16,12 @@ import {
     getCoresForExtension,
     stop,
 } from "../../utils/emulationUtils.js";
+import {
+    lookupGameId,
+    getGameCovers,
+    downloadCoverByUrl,
+} from "../../utils/loaderUtils.js";
+import { getDatabase } from "../../utils/databaseUtils.js";
 
 const router = express.Router();
 
@@ -154,6 +160,57 @@ router.get("/:id/cover", (req, res) => {
     } catch (error) {
         console.error("Error fetching cover art:", error);
         res.status(500).json({ error: "Failed to fetch cover art" });
+    }
+});
+
+router.get("/:id/lookup-covers", async (req, res) => {
+    try {
+        const game = getGameById(req.params.id);
+        if (!game) {
+            return res.status(404).json({ error: "Game not found" });
+        }
+
+        const steamGameId = await lookupGameId(game.name);
+        if (!steamGameId) {
+            return res.status(404).json({ error: "No matching game found on SteamGridDB" });
+        }
+
+        const covers = await getGameCovers(steamGameId, 10);
+        res.json({ steamGameId, covers });
+    } catch (error) {
+        console.error("Error looking up covers:", error);
+        if (error.message.includes("API key")) {
+            return res.status(400).json({ error: error.message });
+        }
+        res.status(500).json({ error: "Failed to lookup covers" });
+    }
+});
+
+router.post("/:id/cover-from-url", async (req, res) => {
+    try {
+        const { coverUrl } = req.body;
+        if (!coverUrl) {
+            return res.status(400).json({ error: "Cover URL is required" });
+        }
+
+        const game = getGameById(req.params.id);
+        if (!game) {
+            return res.status(404).json({ error: "Game not found" });
+        }
+
+        const success = await downloadCoverByUrl(coverUrl, req.params.id);
+        if (!success) {
+            return res.status(500).json({ error: "Failed to download cover" });
+        }
+
+        const db = getDatabase();
+        const stmt = db.prepare("UPDATE roms SET cover_art = 1 WHERE id = ?");
+        stmt.run(req.params.id);
+
+        res.json({ message: "Cover art updated successfully" });
+    } catch (error) {
+        console.error("Error updating cover from URL:", error);
+        res.status(500).json({ error: "Failed to update cover" });
     }
 });
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
     getRequest,
     deleteRequest,
@@ -22,10 +22,11 @@ export const useGames = () => {
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
     const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
+    const previousGamesRef = useRef<Game[]>([]);
 
-    const loadGames = async () => {
+    const loadGames = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             const data = await getRequest("games");
             setGames(data);
 
@@ -55,9 +56,9 @@ export const useGames = () => {
             setCoverUrls(newCoverUrls);
         } catch (error) {
             console.error("Failed to load games:", error);
-            toast.error("Failed to load games");
+            if (!silent) toast.error("Failed to load games");
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -108,6 +109,17 @@ export const useGames = () => {
         }
     };
 
+    const selectCoverFromUrl = async (gameId: string, coverUrl: string) => {
+        try {
+            await postRequest(`games/${gameId}/cover-from-url`, { coverUrl });
+            toast.success("Cover art updated successfully");
+            loadGames();
+        } catch (error) {
+            console.error("Failed to update cover art:", error);
+            toast.error("Failed to update cover art");
+        }
+    };
+
     const renameGame = async (gameId: string, newName: string) => {
         try {
             await putRequest(`games/${gameId}`, { name: newName });
@@ -142,12 +154,43 @@ export const useGames = () => {
 
     useEffect(() => {
         loadGames();
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                const data = await getRequest("games");
+                const oldGamesMap = new Map(
+                    previousGamesRef.current.map((g) => [g.id, g]),
+                );
+
+                let hasNewCovers = false;
+                for (const game of data) {
+                    const oldGame = oldGamesMap.get(game.id);
+                    if (oldGame && !oldGame.cover_art && game.cover_art) {
+                        hasNewCovers = true;
+                        break;
+                    }
+                }
+
+                if (hasNewCovers) await loadGames(true);
+
+                previousGamesRef.current = data;
+            } catch (error) {}
+        }, 2000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, []);
+
+    useEffect(() => {
         return () => {
             Object.values(coverUrls).forEach((url) => {
                 if (url.startsWith("blob:")) URL.revokeObjectURL(url);
             });
         };
-    }, []);
+    }, [coverUrls]);
 
     return {
         games,
@@ -156,6 +199,7 @@ export const useGames = () => {
         loadGames,
         uploadRom,
         uploadCover,
+        selectCoverFromUrl,
         renameGame,
         deleteGame,
         startGame,
