@@ -1,5 +1,5 @@
 import { sendResponse } from "../DaemonSocket.js";
-import { getFilteredGames, getCoverArtBase64 } from "../../utils/gamesUtils.js";
+import { getFilteredGames } from "../../utils/gamesUtils.js";
 
 export const GET_GAMES_MESSAGE_TYPE = "GET_GAMES";
 
