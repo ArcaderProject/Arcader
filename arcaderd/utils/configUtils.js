@@ -1,10 +1,22 @@
 import { getDatabase } from "./databaseUtils.js";
 
+const CONFIG_DEFAULTS = {
+    "coinScreen.insertMessage": "INSERT COIN",
+    "coinScreen.infoMessage": "Insert Coin to enter Game Library and choose a Game to play!",
+    "coinScreen.konamiCodeEnabled": "false",
+    "coinScreen.coinSlotEnabled": "true",
+    steamGridDbApiKey: null,
+};
+
 export const getConfig = (key, defaultValue = null) => {
     const db = getDatabase();
     const stmt = db.prepare("SELECT value FROM config WHERE key = ?");
     const result = stmt.get(key);
-    return result ? result.value : defaultValue;
+
+    if (result) return result.value;
+    if (defaultValue === null && CONFIG_DEFAULTS.hasOwnProperty(key)) return CONFIG_DEFAULTS[key];
+
+    return defaultValue;
 };
 
 export const setConfig = (key, value) => {

@@ -4,7 +4,7 @@ import { Button } from "@/components/retroui/Button";
 import { Input } from "@/components/retroui/Input";
 import { Lock, LogIn } from "lucide-react";
 import banner from "@/common/assets/banner.png";
-import { AuthContext } from "@/common/contects/AuthProvider";
+import { AuthContext } from "@/common/contexts/AuthProvider";
 
 export const Login = () => {
     const [password, setPassword] = useState("");

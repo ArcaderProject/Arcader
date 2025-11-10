@@ -1,6 +1,6 @@
 import { Button } from "@/components/retroui/Button.tsx";
 import { useContext, useState } from "react";
-import { AuthContext } from "@/common/contects/AuthProvider.tsx";
+import { AuthContext } from "@/common/contexts/AuthProvider.tsx";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Settings, Gamepad2, LogOut, Menu, X, ListChecks } from "lucide-react";
@@ -35,8 +35,8 @@ export const Navigation = () => {
                             className={({ isActive }) =>
                                 cn(
                                     "flex items-center gap-2 px-4 py-2 font-head text-sm font-normal transition-all duration-200 bg-secondary border-2 border-border",
-                                    isActive 
-                                        ? "text-primary-foreground bg-primary shadow-md translate-y-0" 
+                                    isActive
+                                        ? "text-primary-foreground bg-primary shadow-md translate-y-0"
                                         : "text-foreground hover:translate-y-1 shadow-sm hover:shadow-none active:translate-y-1",
                                 )
                             }
@@ -84,8 +84,8 @@ export const Navigation = () => {
                             className={({ isActive }) =>
                                 cn(
                                     "flex items-center gap-3 px-4 py-3 font-head text-base font-normal transition-all duration-200 w-full uppercase tracking-wider bg-secondary border-2 border-border",
-                                    isActive 
-                                        ? "text-primary-foreground bg-primary shadow-md" 
+                                    isActive
+                                        ? "text-primary-foreground bg-primary shadow-md"
                                         : "text-foreground active:translate-y-1 shadow-sm active:shadow-none",
                                 )
                             }
