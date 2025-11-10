@@ -13,6 +13,7 @@ var exit_thread := false
 var ping_timer: Timer
 var last_ping_time := 0.0
 var ping_timeout := 5.0
+var message_buffer: String = ""
 
 func _ready() -> void:
 	stream = StreamPeerUnix.new()
@@ -33,7 +34,14 @@ func get_socket_path() -> String:
 	return xdg_runtime + "/arcaderd.sock" if xdg_runtime != "" else ""
 
 func connect_to_daemon() -> void:
-	var result = stream.open(get_socket_path())
+	var socket_path = get_socket_path()
+	
+	if socket_path == "":
+		_handle_connection_loss()
+		return
+	
+	var result = stream.open(socket_path)
+	
 	if result == OK:
 		_handle_connection_restored()
 	else:
@@ -53,6 +61,8 @@ func disconnect_from_daemon() -> void:
 	mutex.lock()
 	connected = false
 	mutex.unlock()
+	
+	message_buffer = ""
 
 func send_message(data: Dictionary) -> void:
 	mutex.lock()
@@ -112,19 +122,33 @@ func _start_ping_timer() -> void:
 
 func attempt_reconnect() -> void:
 	var socket_path = get_socket_path()
+	
 	if socket_path == "":
 		return
 	
 	if stream.is_open():
 		stream.close()
+
+	mutex.lock()
+	if thread and thread.is_started():
+		exit_thread = true
+		mutex.unlock()
+		thread.wait_to_finish()
+		mutex.lock()
+	mutex.unlock()
+	
+	message_buffer = ""
 	
 	var result = stream.open(socket_path)
+	
 	if result == OK:
 		_handle_connection_restored()
-		if thread and not thread.is_started():
-			exit_thread = false
-			thread = Thread.new()
-			thread.start(_thread_read_loop)
+		
+		mutex.lock()
+		exit_thread = false
+		mutex.unlock()
+		thread = Thread.new()
+		thread.start(_thread_read_loop)
 
 func _handle_connection_restored() -> void:
 	mutex.lock()
@@ -171,9 +195,17 @@ func read_messages() -> void:
 	
 	last_ping_time = Time.get_ticks_msec() / 1000.0
 
-	for line in res[1].get_string_from_utf8().strip_edges().split("\n"):
-		if line.strip_edges() != "":
-			parse_message(line)
+	var raw_string = res[1].get_string_from_utf8()
+
+	message_buffer += raw_string
+
+	while message_buffer.find("\n") != -1:
+		var newline_pos = message_buffer.find("\n")
+		var complete_message = message_buffer.substr(0, newline_pos)
+		message_buffer = message_buffer.substr(newline_pos + 1)
+		
+		if complete_message.strip_edges() != "":
+			parse_message(complete_message)
 
 func parse_message(msg: String) -> void:
 	var json = JSON.new()

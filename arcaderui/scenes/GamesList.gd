@@ -6,11 +6,17 @@ extends Control
 
 var game_items: Array = []
 var selected_index: int = 0
+var cover_cache: Dictionary = {}
+var loading_timer: Timer = null
+var retry_count: int = 0
+var max_retries: int = 5
 
 func _ready() -> void:
 	Communicator.games_received.connect(_on_games_received)
 	Communicator.games_error.connect(_on_games_error)
 	Communicator.game_start_error.connect(_on_game_start_error)
+	Communicator.cover_received.connect(_on_cover_received)
+	Communicator.connection_restored.connect(_on_connection_restored)
 	
 	loading_label.visible = true
 	error_label.visible = false
@@ -83,21 +89,17 @@ func _create_game_item(game: Dictionary) -> Control:
 	cover_rect.custom_minimum_size = Vector2(80, 80)
 	cover_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	cover_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	
-	if game.get("cover_data"):
-		var image = Image.new()
-		var buffer = Marshalls.base64_to_raw(game["cover_data"])
-		
-		var error = image.load_png_from_buffer(buffer)
-		if error != OK:
-			error = image.load_jpg_from_buffer(buffer)
-		
-		if error == OK:
-			cover_rect.texture = ImageTexture.create_from_image(image)
-		else:
-			cover_rect.texture = _create_placeholder_texture()
-	else:
-		cover_rect.texture = _create_placeholder_texture()
+	cover_rect.name = "CoverRect"
+
+	cover_rect.texture = _create_placeholder_texture()
+
+	if game.get("cover_art", false):
+		var game_id = game.get("id", "")
+		if game_id:
+			if cover_cache.has(game_id):
+				_set_cover_texture(cover_rect, cover_cache[game_id])
+			else:
+				Communicator.get_cover(game_id)
 	
 	container.add_child(cover_rect)
 	
@@ -153,3 +155,32 @@ func _on_games_error(error: String) -> void:
 
 func _on_back_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+
+func _on_cover_received(game_id: String, cover_data: String) -> void:
+	cover_cache[game_id] = cover_data
+	
+	for item in game_items:
+		var game = item.get_meta("game_data")
+		if game.get("id") == game_id:
+			var cover_rect = item.get_node_or_null("CoverRect")
+			if cover_rect:
+				_set_cover_texture(cover_rect, cover_data)
+
+func _set_cover_texture(cover_rect: TextureRect, cover_data: String) -> void:
+	if not cover_data or cover_data == "":
+		return
+	
+	var image = Image.new()
+	var buffer = Marshalls.base64_to_raw(cover_data)
+	
+	var error = image.load_png_from_buffer(buffer)
+	if error != OK:
+		error = image.load_jpg_from_buffer(buffer)
+	
+	if error == OK:
+		cover_rect.texture = ImageTexture.create_from_image(image)
+
+func _on_connection_restored() -> void:
+	loading_label.visible = true
+	error_label.visible = false
+	Communicator.get_games()

@@ -14,7 +14,6 @@ export const handleGetGames = (socket, requestId) => {
             extension: game.extension,
             filename: game.filename,
             cover_art: game.cover_art === 1,
-            cover_data: getCoverArtBase64(game.id),
         }));
 
         sendResponse(socket, {

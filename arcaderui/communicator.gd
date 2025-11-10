@@ -5,6 +5,7 @@ signal games_error(error: String)
 signal game_started(game_info: Dictionary)
 signal game_start_error(error: String)
 signal screen_updated(screen: String)
+signal cover_received(game_id: String, cover_data: String)
 
 var pending_requests := {}
 var next_request_id := 0
@@ -31,6 +32,18 @@ func start_game(game_uuid: String) -> void:
 		"requestId": request_id,
 		"data": {
 			"gameUuid": game_uuid
+		}
+	})
+
+func get_cover(game_id: String) -> void:
+	var request_id = _generate_request_id()
+	pending_requests[request_id] = "GET_COVER"
+	
+	send_message({
+		"type": "GET_COVER",
+		"requestId": request_id,
+		"data": {
+			"gameId": game_id
 		}
 	})
 
@@ -61,6 +74,9 @@ func handle_message(msg: Dictionary) -> void:
 			"START_GAME_ERROR":
 				_handle_game_start_error(msg)
 				pending_requests.erase(request_id)
+			"GET_COVER_RESPONSE":
+				_handle_cover_response(msg)
+				pending_requests.erase(request_id)
 
 func _handle_games_response(msg: Dictionary) -> void:
 	if msg.get("success", false):
@@ -88,3 +104,11 @@ func _handle_update_screen(msg: Dictionary) -> void:
 	var screen = data.get("screen", "")
 	if screen:
 		emit_signal("screen_updated", screen)
+
+func _handle_cover_response(msg: Dictionary) -> void:
+	if msg.get("success", false):
+		var data = msg.get("data", {})
+		var game_id = data.get("gameId", "")
+		var cover_data = data.get("coverData", "")
+		if game_id:
+			emit_signal("cover_received", game_id, cover_data)

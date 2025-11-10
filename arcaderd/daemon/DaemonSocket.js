@@ -72,10 +72,22 @@ export const startDaemonSocket = () => {
         const clientId = `client_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
         clients.set(clientId, socket);
 
+        let messageBuffer = "";
+
         socket.on("data", (data) => {
             try {
-                const message = JSON.parse(data.toString());
-                handleMessage(socket, message);
+                messageBuffer += data.toString();
+
+                while (messageBuffer.includes("\n")) {
+                    const newlinePos = messageBuffer.indexOf("\n");
+                    const completeMessage = messageBuffer.substring(0, newlinePos);
+                    messageBuffer = messageBuffer.substring(newlinePos + 1);
+
+                    if (completeMessage.trim()) {
+                        const message = JSON.parse(completeMessage);
+                        handleMessage(socket, message);
+                    }
+                }
             } catch (error) {
                 console.error("Error parsing message:", error);
                 sendError(socket, "Invalid JSON format");
