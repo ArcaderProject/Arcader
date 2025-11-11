@@ -28,6 +28,8 @@ export const PacmanAnimation = ({
         let position = -pacmanSize * 2;
         let frameCount = 0;
         const eaten: number[] = [];
+        let lastTime = 0;
+        const speed = 60;
 
         const sprites = {
             0: [
@@ -92,7 +94,10 @@ export const PacmanAnimation = ({
             ],
         };
 
-        const animate = () => {
+        const animate = (currentTime: number) => {
+            const deltaTime = lastTime === 0 ? 0 : (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
             const pixelCanvas = document.createElement("canvas");
             pixelCanvas.width = pixelWidth;
             pixelCanvas.height = pixelHeight;
@@ -116,11 +121,11 @@ export const PacmanAnimation = ({
                 }
             }
 
-            const animFrame = Math.floor(frameCount / 4) % 4;
-            frameCount++;
+            frameCount += deltaTime * 15;
+            const animFrame = (Math.floor(frameCount) % 4) as 0 | 1 | 2 | 3;
             const pacmanX = Math.floor(position);
             const pacmanY = Math.floor(pixelHeight / 2) - 6;
-            const sprite = sprites[animFrame as keyof typeof sprites];
+            const sprite = sprites[animFrame];
 
             for (let row = 0; row < 13; row++) {
                 for (let col = 0; col < 13; col++) {
@@ -149,7 +154,7 @@ export const PacmanAnimation = ({
                 canvas.height,
             );
 
-            position += 1.2;
+            position += speed * deltaTime;
 
             if (position > pixelWidth + pacmanSize * 2) {
                 onComplete();
@@ -159,7 +164,7 @@ export const PacmanAnimation = ({
             animationFrameRef.current = requestAnimationFrame(animate);
         };
 
-        animate();
+        animationFrameRef.current = requestAnimationFrame(animate);
 
         return () => {
             if (animationFrameRef.current) {
