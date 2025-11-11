@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/retroui/Button";
 import { Input } from "@/components/retroui/Input";
-import { useNavigate, useParams } from "react-router-dom";
-import { getRequest } from "@/common/utils/RequestUtil";
+import { getRequest, putRequest } from "@/common/utils/RequestUtil";
 import {
     ChevronRight,
     ChevronLeft,
     ChevronsRight,
     ChevronsLeft,
     Search,
-    ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
-import { putRequest } from "@/common/utils/RequestUtil";
 
 interface Game {
     id: string;
@@ -20,22 +17,15 @@ interface Game {
     console: string;
 }
 
-interface GameList {
-    id: string;
-    name: string;
-    type: "include" | "exclude";
-    is_default: number;
+interface ListManageGamesProps {
+    listId: string;
+    listType: "include" | "exclude";
+    onSaved?: () => void;
 }
 
-export const ManageListGames = () => {
-    const { listId } = useParams<{ listId: string }>();
-    const navigate = useNavigate();
-
-    const [list, setList] = useState<GameList | null>(null);
+export const ListManageGames = ({ listId, listType, onSaved }: ListManageGamesProps) => {
     const [allGames, setAllGames] = useState<Game[]>([]);
-    const [selectedGameIds, setSelectedGameIds] = useState<Set<string>>(
-        new Set(),
-    );
+    const [selectedGameIds, setSelectedGameIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -50,39 +40,25 @@ export const ManageListGames = () => {
     }, [listId]);
 
     const loadData = async () => {
-        if (!listId) return;
-
         setLoading(true);
 
         try {
-            const [listData, games, listGamesData] = await Promise.all([
-                getRequest(`lists`).then((lists) =>
-                    lists.find((l: GameList) => l.id === listId),
-                ),
+            const [games, listGamesData] = await Promise.all([
                 getRequest("games"),
                 getRequest(`lists/${listId}/games`),
             ]);
 
-            if (!listData) {
-                toast.error("List not found");
-                navigate("/lists");
-                return;
-            }
-
-            setList(listData);
             setAllGames(games);
             setSelectedGameIds(new Set(listGamesData.gameIds));
         } catch (err) {
             console.error("Failed to load data:", err);
-            toast.error("Failed to load data");
+            toast.error("Failed to load games");
         } finally {
             setLoading(false);
         }
     };
 
     const handleSave = async () => {
-        if (!listId) return;
-
         setSaving(true);
 
         try {
@@ -90,17 +66,13 @@ export const ManageListGames = () => {
                 gameIds: Array.from(selectedGameIds),
             });
             toast.success("Games updated successfully");
-            navigate("/lists");
+            if (onSaved) onSaved();
         } catch (err: any) {
             console.error("Failed to save:", err);
             toast.error(err?.error || "Failed to update games");
         } finally {
             setSaving(false);
         }
-    };
-
-    const handleCancel = () => {
-        navigate("/lists");
     };
 
     const moveToRight = () => {
@@ -171,9 +143,7 @@ export const ManageListGames = () => {
         );
 
     const getPageText = () => {
-        if (!list) return { leftTitle: "", rightTitle: "" };
-
-        if (list.type === "include") {
+        if (listType === "include") {
             return {
                 leftTitle: "AVAILABLE GAMES",
                 rightTitle: "INCLUDED GAMES",
@@ -194,7 +164,7 @@ export const ManageListGames = () => {
         onToggle: (id: string) => void,
         emptyMessage: string,
     ) => (
-        <div className="border-2 rounded flex-1 overflow-y-auto">
+        <div className="border-2 border-border rounded flex-1 overflow-y-auto bg-background max-h-[400px]">
             {games.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-sm font-head opacity-70 p-8">
                     {emptyMessage}
@@ -205,7 +175,7 @@ export const ManageListGames = () => {
                     return (
                         <div
                             key={game.id}
-                            className={`flex items-center gap-3 p-3 border-b-2 last:border-b-0 cursor-pointer transition hover:bg-primary/10 ${
+                            className={`flex items-center gap-3 p-3 border-b-2 border-border last:border-b-0 cursor-pointer transition hover:bg-primary/10 ${
                                 isSelected ? "bg-primary/20" : ""
                             }`}
                             onClick={() => onToggle(game.id)}
@@ -234,56 +204,21 @@ export const ManageListGames = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full">
-                <div className="text-xl font-head">LOADING...</div>
+            <div className="flex items-center justify-center py-8">
+                <div className="text-sm font-head text-muted-foreground">LOADING GAMES...</div>
             </div>
         );
     }
 
-    if (!list) {
-        return null;
-    }
-
     return (
-        <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                    <Button
-                        variant="outline"
-                        onClick={handleCancel}
-                        className="gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        BACK
-                    </Button>
-                    <div>
-                        <h1 className="text-3xl md:text-4xl font-head font-bold">
-                            {list.name.toUpperCase()}
-                        </h1>
-                        <p className="text-sm font-head mt-1 opacity-70">
-                            {list.type === "include"
-                                ? "INCLUDE MODE"
-                                : "EXCLUDE MODE"}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={handleCancel}>
-                        CANCEL
-                    </Button>
-                    <Button onClick={handleSave} disabled={saving}>
-                        {saving ? "SAVING..." : "SAVE"}
-                    </Button>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-4 flex-1 min-h-0">
+        <div className="space-y-4">
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-4">
                 <div className="flex flex-col space-y-3 min-h-0">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-head font-bold text-lg">
+                        <h3 className="font-head font-bold text-sm">
                             {pageText.leftTitle}
                         </h3>
-                        <span className="font-head text-sm opacity-70">
+                        <span className="font-head text-xs opacity-70">
                             {availableGames.length}
                         </span>
                     </div>
@@ -293,7 +228,7 @@ export const ManageListGames = () => {
                             placeholder="SEARCH..."
                             value={leftSearch}
                             onChange={(e) => setLeftSearch(e.target.value)}
-                            className="pl-10 uppercase placeholder:normal-case"
+                            className="pl-10 uppercase placeholder:normal-case h-10"
                         />
                     </div>
                     {renderGameList(
@@ -347,10 +282,10 @@ export const ManageListGames = () => {
 
                 <div className="flex flex-col space-y-3 min-h-0">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-head font-bold text-lg">
+                        <h3 className="font-head font-bold text-sm">
                             {pageText.rightTitle}
                         </h3>
-                        <span className="font-head text-sm opacity-70">
+                        <span className="font-head text-xs opacity-70">
                             {selectedGames.length}
                         </span>
                     </div>
@@ -360,20 +295,26 @@ export const ManageListGames = () => {
                             placeholder="SEARCH..."
                             value={rightSearch}
                             onChange={(e) => setRightSearch(e.target.value)}
-                            className="pl-10 uppercase placeholder:normal-case"
+                            className="pl-10 uppercase placeholder:normal-case h-10"
                         />
                     </div>
                     {renderGameList(
                         selectedGames,
                         rightSelected,
                         toggleRightSelection,
-                        list.type === "include" ? "NO GAMES" : "NO GAMES",
+                        listType === "include" ? "NO GAMES" : "NO GAMES",
                     )}
                     <div className="text-xs font-head opacity-70 h-5">
                         {rightSelected.size > 0 &&
                             `${rightSelected.size} SELECTED`}
                     </div>
                 </div>
+            </div>
+
+            <div className="flex justify-end">
+                <Button onClick={handleSave} disabled={saving}>
+                    {saving ? "SAVING..." : "SAVE CHANGES"}
+                </Button>
             </div>
         </div>
     );

@@ -7,10 +7,8 @@ import { CreateListDialog } from "./components/CreateListDialog";
 import { EditListDialog } from "./components/EditListDialog";
 import { useLists, type GameList } from "./hooks/useLists";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 export const Lists = () => {
-    const navigate = useNavigate();
     const {
         lists,
         selectedList,
@@ -56,10 +54,6 @@ export const Lists = () => {
     const openEditDialog = (list: GameList) => {
         setActiveList(list);
         setEditDialogOpen(true);
-    };
-
-    const openManageGames = (list: GameList) => {
-        navigate(`/lists/${list.id}/manage`);
     };
 
     const confirmDelete = (list: GameList) => {
@@ -110,7 +104,6 @@ export const Lists = () => {
                     selectedList={selectedList}
                     onSelect={handleSelectList}
                     onEdit={openEditDialog}
-                    onManageGames={openManageGames}
                     onDelete={confirmDelete}
                 />
             )}
