@@ -10,7 +10,7 @@ Version: ${VERSION}
 Section: games
 Priority: optional
 Architecture: amd64
-Depends: libc6, systemd
+Depends: libc6, systemd, p7zip-full
 Maintainer: ArcaderProject <noreply@github.com>
 Description: Arcader Gaming System
  Arcader gaming system with UI and daemon service.

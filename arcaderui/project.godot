@@ -17,6 +17,12 @@ boot_splash/fullsize=false
 boot_splash/image="uid://otgvq38r1ita"
 config/icon="uid://c4d5v0feafg1q"
 
+[display]
+
+window/size/mode=3
+window/size/fullscreen=true
+window/stretch/mode="viewport"
+
 [autoload]
 
 Communicator="*res://communicator.gd"
