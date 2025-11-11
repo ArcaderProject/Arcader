@@ -8,7 +8,10 @@ import {
     unlockSaveFolder,
     clearSaveFolder,
     deleteSaveFolder,
+    getGamesInSaveFolder,
+    deleteGameSaves,
 } from "../../utils/gameSavesUtils.js";
+import {getGameById} from "../../utils/gamesUtils.js";
 
 const router = express.Router();
 
@@ -18,44 +21,40 @@ router.get("/", (req, res) => {
         res.json(folders);
     } catch (error) {
         console.error("Error fetching save folders:", error);
-        res.status(500).json({ error: "Failed to fetch save folders" });
+        res.status(500).json({error: "Failed to fetch save folders"});
     }
 });
 
 router.post("/", (req, res) => {
     try {
-        const { name } = req.body;
-        
+        const {name} = req.body;
+
         if (!name || !name.trim()) {
-            return res.status(400).json({ error: "Name is required" });
+            return res.status(400).json({error: "Name is required"});
         }
-        
+
         const folder = createSaveFolder(name.trim());
         res.status(201).json(folder);
     } catch (error) {
         console.error("Error creating save folder:", error);
-        res.status(500).json({ error: "Failed to create save folder" });
+        res.status(500).json({error: "Failed to create save folder"});
     }
 });
 
 router.put("/:uuid", (req, res) => {
     try {
-        const { name } = req.body;
-        
-        if (!name || !name.trim()) {
-            return res.status(400).json({ error: "Name is required" });
-        }
-        
+        const {name} = req.body;
+
+        if (!name || !name.trim()) return res.status(400).json({error: "Name is required"});
+
         const folder = renameSaveFolder(req.params.uuid, name.trim());
         res.json(folder);
     } catch (error) {
         console.error("Error updating save folder:", error);
-        
-        if (error.message === "Cannot rename global profile") {
-            return res.status(403).json({ error: error.message });
-        }
-        
-        res.status(500).json({ error: "Failed to update save folder" });
+
+        if (error.message === "Cannot rename global profile") return res.status(403).json({error: error.message});
+
+        res.status(500).json({error: "Failed to update save folder"});
     }
 });
 
@@ -65,12 +64,11 @@ router.post("/:uuid/activate", (req, res) => {
         res.json(folder);
     } catch (error) {
         console.error("Error activating save folder:", error);
-        
-        if (error.message === "Save folder not found") {
-            return res.status(404).json({ error: error.message });
-        }
-        
-        res.status(500).json({ error: "Failed to activate save folder" });
+
+        if (error.message === "Save folder not found") return res.status(404).json({error: error.message});
+
+
+        res.status(500).json({error: "Failed to activate save folder"});
     }
 });
 
@@ -80,7 +78,7 @@ router.post("/:uuid/lock", (req, res) => {
         res.json(folder);
     } catch (error) {
         console.error("Error locking save folder:", error);
-        res.status(500).json({ error: "Failed to lock save folder" });
+        res.status(500).json({error: "Failed to lock save folder"});
     }
 });
 
@@ -90,48 +88,73 @@ router.post("/:uuid/unlock", (req, res) => {
         res.json(folder);
     } catch (error) {
         console.error("Error unlocking save folder:", error);
-        res.status(500).json({ error: "Failed to unlock save folder" });
+        res.status(500).json({error: "Failed to unlock save folder"});
     }
 });
 
 router.post("/:uuid/clear", (req, res) => {
     try {
         const result = clearSaveFolder(req.params.uuid);
-        res.json({ 
+        res.json({
             success: true,
-            deletedCount: result.deletedCount 
+            deletedCount: result.deletedCount
         });
     } catch (error) {
         console.error("Error clearing save folder:", error);
-        
-        if (error.message === "Save folder not found") {
-            return res.status(404).json({ error: error.message });
-        }
-        
-        if (error.message === "Cannot clear a locked save folder") {
-            return res.status(403).json({ error: error.message });
-        }
-        
-        res.status(500).json({ error: "Failed to clear save folder" });
+
+        if (error.message === "Save folder not found") return res.status(404).json({error: error.message});
+        if (error.message === "Cannot clear a locked save folder") return res.status(403).json({error: error.message});
+
+
+        res.status(500).json({error: "Failed to clear save folder"});
     }
 });
 
 router.delete("/:uuid", (req, res) => {
     try {
         deleteSaveFolder(req.params.uuid);
-        res.json({ success: true });
+        res.json({success: true});
     } catch (error) {
         console.error("Error deleting save folder:", error);
-        
-        if (error.message === "Cannot delete global profile") {
-            return res.status(403).json({ error: error.message });
-        }
-        
-        if (error.message === "Save folder not found") {
-            return res.status(404).json({ error: error.message });
-        }
-        
-        res.status(500).json({ error: "Failed to delete save folder" });
+
+        if (error.message === "Cannot delete global profile") return res.status(403).json({error: error.message});
+        if (error.message === "Save folder not found") return res.status(404).json({error: error.message});
+
+        res.status(500).json({error: "Failed to delete save folder"});
+    }
+});
+
+router.get("/:uuid/games", (req, res) => {
+    try {
+        const gamesInFolder = getGamesInSaveFolder(req.params.uuid);
+
+        const enrichedGames = gamesInFolder.map(gameSave => {
+            const game = getGameById(gameSave.gameId);
+            return {...gameSave, game: game || null};
+        }).filter(item => item.game !== null);
+
+        res.json(enrichedGames);
+    } catch (error) {
+        console.error("Error fetching games in save folder:", error);
+
+        if (error.message === "Save folder not found") return res.status(404).json({error: error.message});
+
+        res.status(500).json({error: "Failed to fetch games in save folder"});
+    }
+});
+
+router.delete("/:uuid/games/:gameId", (req, res) => {
+    try {
+        const result = deleteGameSaves(req.params.uuid, req.params.gameId);
+        res.json({success: true, deletedCount: result.deletedCount, freedSpace: result.freedSpace});
+    } catch (error) {
+        console.error("Error deleting game saves:", error);
+
+        if (error.message === "Save folder not found") return res.status(404).json({error: error.message});
+        if (error.message === "Cannot delete saves from a locked save folder") return res.status(403).json({error: error.message});
+
+
+        res.status(500).json({error: "Failed to delete game saves"});
     }
 });
 

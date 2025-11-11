@@ -207,3 +207,98 @@ export const deleteSaveFolder = (uuid) => {
 export const getSaveFolderPath = (uuid) => {
     return path.join(SAVES_BASE_PATH, uuid);
 };
+
+const findFilesRecursive = (dirPath, pattern) => {
+    const matchingFiles = [];
+    
+    if (!fs.existsSync(dirPath)) return matchingFiles;
+    
+    const items = fs.readdirSync(dirPath);
+    
+    for (const item of items) {
+        const itemPath = path.join(dirPath, item);
+        const stats = fs.statSync(itemPath);
+        
+        if (stats.isDirectory()) {
+            matchingFiles.push(...findFilesRecursive(itemPath, pattern));
+        } else if (stats.isFile()) {
+            const baseName = path.basename(item, path.extname(item));
+            if (baseName.includes(pattern)) matchingFiles.push(itemPath);
+        }
+    }
+    
+    return matchingFiles;
+};
+
+const calculateTotalSize = (filePaths) => {
+    let totalSize = 0;
+    
+    for (const filePath of filePaths) {
+        try {
+            if (fs.existsSync(filePath)) {
+                const stats = fs.statSync(filePath);
+                totalSize += stats.size;
+            }
+        } catch (error) {
+            console.error(`Error reading file size for ${filePath}:`, error);
+        }
+    }
+    
+    return totalSize;
+};
+
+export const getGamesInSaveFolder = (uuid) => {
+    const folder = getSaveFolder(uuid);
+    if (!folder) throw new Error("Save folder not found");
+    
+    const folderPath = getSaveFolderPath(uuid);
+    if (!fs.existsSync(folderPath)) return [];
+
+    const db = getDatabase();
+    const games = db.query("SELECT id FROM roms").all();
+    
+    const gamesWithSaves = [];
+    
+    for (const game of games) {
+        const gameId = game.id;
+        const matchingFiles = findFilesRecursive(folderPath, gameId);
+        
+        if (matchingFiles.length > 0) {
+            const totalSize = calculateTotalSize(matchingFiles);
+            gamesWithSaves.push({
+                gameId,
+                fileCount: matchingFiles.length,
+                totalSize,
+            });
+        }
+    }
+    
+    return gamesWithSaves;
+};
+
+export const deleteGameSaves = (uuid, gameId) => {
+    const folder = getSaveFolder(uuid);
+    if (!folder) throw new Error("Save folder not found");
+    if (folder.isLocked) throw new Error("Cannot delete saves from a locked save folder");
+    
+    const folderPath = getSaveFolderPath(uuid);
+    if (!fs.existsSync(folderPath)) return { deletedCount: 0, freedSpace: 0 };
+    
+    const matchingFiles = findFilesRecursive(folderPath, gameId);
+    const totalSize = calculateTotalSize(matchingFiles);
+    let deletedCount = 0;
+    
+    for (const filePath of matchingFiles) {
+        try {
+            fs.unlinkSync(filePath);
+            deletedCount++;
+            console.log(`Deleted game save file: ${filePath}`);
+        } catch (error) {
+            console.error(`Failed to delete ${filePath}:`, error);
+        }
+    }
+    
+    console.log(`Deleted ${deletedCount} save file(s) for game ${gameId} from folder ${uuid} (${folder.name}), freed ${totalSize} bytes`);
+    
+    return {deletedCount, freedSpace: totalSize,};
+};
