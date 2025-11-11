@@ -55,12 +55,14 @@ export const ListsTable = ({
                         <ContextMenu>
                             <ContextMenu.Trigger asChild>
                                 <div
-                                    onClick={() => toggleExpanded(list.id)}
+                                    onClick={() => !isDefault && toggleExpanded(list.id)}
                                     className={cn(
-                                        "group relative p-4 transition-all duration-200 cursor-pointer",
+                                        "group relative p-4 transition-all duration-200",
+                                        !isDefault && "cursor-pointer",
                                         isSelected
                                             ? "bg-primary/5"
-                                            : "bg-secondary hover:bg-primary/5"
+                                            : "bg-secondary",
+                                        !isDefault && "hover:bg-primary/5"
                                     )}
                                 >
                                     <div className="flex items-center justify-between gap-4">
@@ -123,13 +125,15 @@ export const ListsTable = ({
                                                     </Button>
                                                 )}
 
-                                                <div className="flex-shrink-0">
-                                                    {isExpanded ? (
-                                                        <ChevronDown className="w-6 h-6 text-muted-foreground" />
-                                                    ) : (
-                                                        <ChevronRight className="w-6 h-6 text-muted-foreground" />
-                                                    )}
-                                                </div>
+                                                {!isDefault && (
+                                                    <div className="flex-shrink-0">
+                                                        {isExpanded ? (
+                                                            <ChevronDown className="w-6 h-6 text-muted-foreground" />
+                                                        ) : (
+                                                            <ChevronRight className="w-6 h-6 text-muted-foreground" />
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
