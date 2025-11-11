@@ -4,9 +4,12 @@ import path from "path";
 import terminate from "terminate";
 import { getRetroArchAppImageName, getRetroArchHomeDirName } from "./directoryUtils.js";
 import { broadcastUpdateScreen } from "../daemon/handlers/startGameHandler.js";
+import { applyRetroArchConfigOverrides } from "./retroarchConfigUtils.js";
+import { getActiveSaveFolder, getSaveFolderPath } from "./gameSavesUtils.js";
 
 let currentPid = null;
 let currentGame = null;
+let currentTempSaveFolder = null;
 let cores = [];
 
 const parseInfoFile = (filePath) => {
@@ -127,7 +130,89 @@ const isWayland = () => {
     return process.env.XDG_SESSION_TYPE === "wayland";
 };
 
+const copyDirRecursive = (src, dest) => {
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+    }
+    
+    const entries = fs.readdirSync(src, { withFileTypes: true });
+    
+    for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+        
+        if (entry.isDirectory()) {
+            copyDirRecursive(srcPath, destPath);
+        } else {
+            fs.copyFileSync(srcPath, destPath);
+        }
+    }
+};
+const createTempSaveFolder = (sourcePath, folderName) => {
+    const tempPath = path.join(process.cwd(), "data", "temp_saves", `temp_${Date.now()}`);
+    
+    console.log(`[createTempSaveFolder] Creating temp folder for "${folderName}"`);
+    console.log(`[createTempSaveFolder] Source path: ${sourcePath}`);
+    console.log(`[createTempSaveFolder] Temp path: ${tempPath}`);
+    
+    try {
+        fs.mkdirSync(tempPath, { recursive: true });
+        console.log(`[createTempSaveFolder] Created temp directory: ${tempPath}`);
+        
+       if (fs.existsSync(sourcePath)) {
+            console.log(`[createTempSaveFolder] Source exists, copying files...`);
+            copyDirRecursive(sourcePath, tempPath);
+            console.log(`[createTempSaveFolder] Successfully copied files to temporary folder`);
+        } else {
+            console.log(`[createTempSaveFolder] Source folder doesn't exist yet, created empty temp folder`);
+        }
+        
+        return tempPath;
+    } catch (error) {
+        console.error("[createTempSaveFolder] Failed to create temporary save folder:", error);
+        return sourcePath;
+    }
+};
+
+const cleanupTempSaveFolder = (tempPath) => {
+    if (!tempPath || !tempPath.includes("temp_saves")) return;
+    
+    try {
+        if (fs.existsSync(tempPath)) {
+            fs.rmSync(tempPath, { recursive: true, force: true });
+            console.log(`Cleaned up temporary save folder: ${tempPath}`);
+        }
+    } catch (error) {
+        console.error("Failed to cleanup temporary save folder:", error);
+    }
+};
+
 export const startEmulator = (core, gameFile, gameInfo = null) => {
+    const configOverrides = {};
+
+    try {
+        const activeSaveFolder = getActiveSaveFolder();
+        
+        if (activeSaveFolder) {
+            let savePath = getSaveFolderPath(activeSaveFolder.uuid);
+
+            if (activeSaveFolder.isLocked) {
+                const tempPath = createTempSaveFolder(savePath, activeSaveFolder.name);
+                currentTempSaveFolder = tempPath;
+                savePath = tempPath;
+            } else {
+                currentTempSaveFolder = null;
+            }
+            
+            configOverrides.savefile_directory = savePath;
+            configOverrides.savestate_directory = savePath;
+        }
+    } catch (error) {
+        console.error("[startEmulator] Failed to set save folder:", error);
+    }
+
+    if (Object.keys(configOverrides).length > 0) applyRetroArchConfigOverrides(configOverrides);
+    
     const LD_PRELOAD = isWayland() ? "/usr/lib/x86_64-linux-gnu/libwayland-client.so.0" : "";
     const retroarchPath = `./data/retroarch/${getRetroArchAppImageName()}`;
     const START_CMD = `${retroarchPath} -f -L ./data/cores/${core} ${gameFile}`;
@@ -202,6 +287,11 @@ export const stop = () => {
         terminate(currentPid, () => {
             console.log("Emulator closed");
         });
+    }
+
+    if (currentTempSaveFolder) {
+        cleanupTempSaveFolder(currentTempSaveFolder);
+        currentTempSaveFolder = null;
     }
 
     currentPid = null;

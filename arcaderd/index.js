@@ -5,11 +5,13 @@ import { runCoresTask } from "./tasks/coresTask.js";
 import { connectToDatabase, runMigrations } from "./utils/databaseUtils.js";
 import { reloadCores } from "./utils/emulationUtils.js";
 import { initializeAdminPassword } from "./utils/configUtils.js";
+import { ensureGlobalProfile } from "./utils/gameSavesUtils.js";
 
 connectToDatabase();
 runMigrations();
 
 initializeAdminPassword();
+ensureGlobalProfile();
 
 runRetroArchTask()
     .then((result) => {

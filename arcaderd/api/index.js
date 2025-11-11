@@ -3,6 +3,7 @@ import healthRouter from "./routes/healthRouter.js";
 import gamesRouter from "./routes/gamesRouter.js";
 import gameListsRouter from "./routes/gameListsRouter.js";
 import configRouter from "./routes/configRouter.js";
+import saveFoldersRouter from "./routes/saveFoldersRouter.js";
 import { getConfig } from "../utils/configUtils.js";
 
 const app = express();
@@ -44,6 +45,7 @@ apiRouter.use("/health", authenticateRequest, healthRouter);
 apiRouter.use("/games", authenticateRequest, gamesRouter);
 apiRouter.use("/lists", authenticateRequest, gameListsRouter);
 apiRouter.use("/config", authenticateRequest, configRouter);
+apiRouter.use("/save-folders", authenticateRequest, saveFoldersRouter);
 
 app.use("/api", apiRouter);
 
