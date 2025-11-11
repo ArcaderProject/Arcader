@@ -1,4 +1,4 @@
-import { Loader as UILoader} from "@/common/components/Loader";
+import { Loader as UILoader} from "@/components/retroui/Loader";
 
 export const Loader = () => {
     return (
