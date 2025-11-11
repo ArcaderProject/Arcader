@@ -211,6 +211,27 @@ export const startEmulator = (core, gameFile, gameInfo = null) => {
         console.error("[startEmulator] Failed to set save folder:", error);
     }
 
+    configOverrides.notification_show_autoconfig = "false";
+    configOverrides.notification_show_autoconfig_fails = "false";
+    configOverrides.notification_show_cheats_applied = "false";
+    configOverrides.notification_show_config_override_load = "false";
+    configOverrides.notification_show_disk_control = "false";
+    configOverrides.notification_show_fast_forward = "false";
+    configOverrides.notification_show_netplay_extra = "false";
+    configOverrides.notification_show_patch_applied = "false";
+    configOverrides.notification_show_refresh_rate = "false";
+    configOverrides.notification_show_remap_load = "false";
+    configOverrides.notification_show_save_state = "false";
+    configOverrides.notification_show_screenshot = "false";
+    configOverrides.notification_show_set_initial_disk = "false";
+    configOverrides.notification_show_when_menu_is_alive = "false";
+
+    configOverrides.menu_show_load_content = "false";
+    configOverrides.menu_show_load_core = "false";
+    configOverrides.menu_show_online_updater = "false";
+    configOverrides.menu_show_core_updater = "false";
+    configOverrides.menu_show_configurations = "false";
+
     if (Object.keys(configOverrides).length > 0) applyRetroArchConfigOverrides(configOverrides);
     
     const LD_PRELOAD = isWayland() ? "/usr/lib/x86_64-linux-gnu/libwayland-client.so.0" : "";
