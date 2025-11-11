@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import healthRouter from "./routes/healthRouter.js";
 import gamesRouter from "./routes/gamesRouter.js";
 import gameListsRouter from "./routes/gameListsRouter.js";
@@ -49,8 +50,16 @@ apiRouter.use("/save-folders", authenticateRequest, saveFoldersRouter);
 
 app.use("/api", apiRouter);
 
-app.get("/", (req, res) => {
-    res.send("admin ui");
+const dashboardPath = path.join(process.cwd(), "dashboard");
+app.use(express.static(dashboardPath));
+
+app.use((req, res) => {
+    const indexPath = path.join(dashboardPath, "index.html");
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            res.status(404).send("Dashboard not found. Please ensure dashboard files are in the working directory.");
+        }
+    });
 });
 
 export const startServer = () => {

@@ -27,6 +27,12 @@ bun install
 bun build --compile --minify --target=bun-linux-x64 ./index.js --outfile=arcaderd
 cd ..
 
+cd dashboard
+echo "Building dashboard assets..."
+pnpm install
+pnpm run build
+cd ..
+
 cd arcaderui
 mkdir -p ../build/arcaderui
 godot --headless --export-release "Linux/X11" ../build/arcaderui/arcaderui
