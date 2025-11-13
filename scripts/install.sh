@@ -106,6 +106,8 @@ setup_audio() {
         passwd
     
     /usr/sbin/usermod -aG audio "$INSTALL_USER"
+    /usr/sbin/usermod -aG video "$INSTALL_USER"
+    /usr/sbin/usermod -aG render "$INSTALL_USER"
     
     USER_HOME=$(getent passwd "$INSTALL_USER" | cut -d: -f6)
     
