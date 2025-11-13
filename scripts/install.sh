@@ -236,19 +236,6 @@ final_configuration() {
     mkdir -p "$USER_HOME/.config/systemd/user"
     chown -R "$INSTALL_USER:$INSTALL_USER" "$USER_HOME/.config/systemd"
     
-    log_info "Enabling arcaderd service for $INSTALL_USER..."
-    
-    if [ -d "/run/user/$USER_ID" ]; then
-        sudo -u "$INSTALL_USER" XDG_RUNTIME_DIR="/run/user/$USER_ID" systemctl --user daemon-reload 2>/dev/null || true
-        sudo -u "$INSTALL_USER" XDG_RUNTIME_DIR="/run/user/$USER_ID" systemctl --user enable arcaderd.service 2>/dev/null || true
-    fi
-    
-    if [ -f "/usr/lib/systemd/user/arcaderd.service" ]; then
-        mkdir -p "$USER_HOME/.config/systemd/user/default.target.wants"
-        ln -sf /usr/lib/systemd/user/arcaderd.service "$USER_HOME/.config/systemd/user/default.target.wants/arcaderd.service" 2>/dev/null || true
-        chown -R "$INSTALL_USER:$INSTALL_USER" "$USER_HOME/.config/systemd/user"
-    fi
-    
     log_info "Adding arcaderd to Openbox autostart as fallback..."
     sed -i '/wait_for_network/a\
 \
