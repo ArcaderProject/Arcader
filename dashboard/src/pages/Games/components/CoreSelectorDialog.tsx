@@ -84,7 +84,7 @@ export const CoreSelectorDialog = ({
                     <Text as="h3">Select Emulator Core</Text>
                 </Dialog.Header>
 
-                <div className="py-6 px-2">
+                <div className="py-6 px-2 max-h-[60vh] overflow-y-auto">
                     <RadioGroup
                         value={selectedCore}
                         onValueChange={setSelectedCore}
