@@ -235,9 +235,6 @@ func _on_games_error(error: String) -> void:
 	error_label.visible = true
 	error_label.text = "Error: " + error
 
-func _on_back_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
-
 func _on_cover_received(game_id: String, cover_data: String) -> void:
 	cover_cache[game_id] = cover_data
 	

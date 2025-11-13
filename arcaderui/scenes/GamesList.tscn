@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cvo8yhg8qn8xd"]
+[gd_scene load_steps=3 format=3 uid="uid://cvo8yhg8qn8xd"]
 
-[ext_resource type="Script" path="res://scenes/GamesList.gd" id="1_games_list"]
+[ext_resource type="Script" uid="uid://bckbdm4177fkp" path="res://scenes/GamesList.gd" id="1_games_list"]
+[ext_resource type="Texture2D" uid="uid://crwtfrody0mss" path="res://assets/background.png" id="2_background"]
 
 [node name="GamesList" type="Control"]
 layout_mode = 3
@@ -17,9 +18,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 50.0
-offset_top = 50.0
+offset_top = 20.0
 offset_right = -50.0
-offset_bottom = -50.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -60,9 +61,8 @@ theme_override_font_sizes/font_size = 24
 text = "Error loading games"
 horizontal_alignment = 1
 
-[node name="BackButton" type="Button" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-text = "BACK TO MENU"
-
-[connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]
+[node name="Background" type="Sprite2D" parent="."]
+z_index = -4096
+scale = Vector2(0.3, 0.29999998)
+texture = ExtResource("2_background")
+centered = false

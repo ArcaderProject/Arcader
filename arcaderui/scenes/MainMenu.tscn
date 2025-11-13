@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://d2gv0b7qwfmeh"]
+[gd_scene load_steps=4 format=3 uid="uid://d2gv0b7qwfmeh"]
 
-[ext_resource type="Script" path="res://scenes/MainMenu.gd" id="1_mainmenu"]
+[ext_resource type="Script" uid="uid://bthwjkgnk2p8d" path="res://scenes/MainMenu.gd" id="1_mainmenu"]
+[ext_resource type="Texture2D" uid="uid://crwtfrody0mss" path="res://assets/background.png" id="2_0ykhv"]
+[ext_resource type="Texture2D" uid="uid://otgvq38r1ita" path="res://assets/banner.png" id="2_2wh52"]
 
 [node name="MainMenu" type="Node2D"]
 script = ExtResource("1_mainmenu")
@@ -11,15 +13,17 @@ offset_bottom = 648.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
+alignment = 1
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="Banner" type="TextureRect" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 64
-text = "ARCADER"
-horizontal_alignment = 1
+texture = ExtResource("2_2wh52")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 
 [node name="GamesButton" type="Button" parent="CenterContainer/VBoxContainer"]
@@ -29,12 +33,10 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "GAMES"
 
-[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 60)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "QUIT"
+[node name="Background" type="Sprite2D" parent="."]
+z_index = -4096
+scale = Vector2(0.3, 0.29999998)
+texture = ExtResource("2_0ykhv")
+centered = false
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/GamesButton" to="." method="_on_games_button_pressed"]
-[connection signal="pressed" from="CenterContainer/VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
