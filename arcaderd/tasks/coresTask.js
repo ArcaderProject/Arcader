@@ -5,16 +5,26 @@ import {
     isRetroArchInstalled,
     areCoresInstalled,
 } from "../utils/directoryUtils.js";
-import {buildRetroArchCoresUrl, downloadFile, extract7z} from "../utils/downloadUtils.js";
+import {
+    buildRetroArchCoresUrl,
+    downloadFile,
+    extract7z,
+    waitForInternet,
+} from "../utils/downloadUtils.js";
 
 const verifyCoresInstallation = (coresDir) => {
     if (!fs.existsSync(coresDir)) {
-        return {success: false, message: "Cores directory does not exist", coreCount: 0, infoCount: 0};
+        return {
+            success: false,
+            message: "Cores directory does not exist",
+            coreCount: 0,
+            infoCount: 0,
+        };
     }
 
     const files = fs.readdirSync(coresDir);
-    const coreFiles = files.filter(file => file.endsWith('_libretro.so'));
-    const infoFiles = files.filter(file => file.endsWith('_libretro.info'));
+    const coreFiles = files.filter((file) => file.endsWith("_libretro.so"));
+    const infoFiles = files.filter((file) => file.endsWith("_libretro.info"));
 
     const success = coreFiles.length > 0;
 
@@ -24,7 +34,7 @@ const verifyCoresInstallation = (coresDir) => {
             ? `Found ${coreFiles.length} core libraries and ${infoFiles.length} info files`
             : `Installation incomplete: ${coreFiles.length} cores, ${infoFiles.length} info files`,
         coreCount: coreFiles.length,
-        infoCount: infoFiles.length
+        infoCount: infoFiles.length,
     };
 };
 
@@ -42,7 +52,7 @@ const extractCores = async (archivePath, coresDir) => {
         await extract7z(archivePath, tempExtractDir);
 
         if (!fs.existsSync(coresDir)) {
-            fs.mkdirSync(coresDir, {recursive: true});
+            fs.mkdirSync(coresDir, { recursive: true });
             console.log("Created cores directory");
         }
 
@@ -55,7 +65,7 @@ const extractCores = async (archivePath, coresDir) => {
 
             const items = fs.readdirSync(dir);
 
-            if (items.some(item => item.endsWith('_libretro.so'))) return dir;
+            if (items.some((item) => item.endsWith("_libretro.so"))) return dir;
 
             for (const item of items) {
                 const itemPath = path.join(dir, item);
@@ -78,7 +88,7 @@ const extractCores = async (archivePath, coresDir) => {
         let copiedCount = 0;
 
         for (const file of coreFiles) {
-            if (file.endsWith('_libretro.so')) {
+            if (file.endsWith("_libretro.so")) {
                 const sourcePath = path.join(sourceCoresDir, file);
                 const targetPath = path.join(coresDir, file);
 
@@ -90,12 +100,11 @@ const extractCores = async (archivePath, coresDir) => {
         console.log(`Copied ${copiedCount} core libraries to ${coresDir}`);
 
         if (fs.existsSync(tempExtractDir)) {
-            fs.rmSync(tempExtractDir, {recursive: true, force: true});
+            fs.rmSync(tempExtractDir, { recursive: true, force: true });
         }
     } catch (error) {
-
         if (fs.existsSync(tempExtractDir)) {
-            fs.rmSync(tempExtractDir, {recursive: true, force: true});
+            fs.rmSync(tempExtractDir, { recursive: true, force: true });
         }
         throw error;
     }
@@ -103,23 +112,38 @@ const extractCores = async (archivePath, coresDir) => {
 
 export const ensureRetroArchCores = async (workingDir = process.cwd()) => {
     try {
-        const {retroarchDir, coresDir} = ensureDataDirectories(workingDir);
+        const { retroarchDir, coresDir } = ensureDataDirectories(workingDir);
 
         if (!isRetroArchInstalled(retroarchDir)) {
             return {
                 success: false,
                 message: "RetroArch must be installed before installing cores",
-                requiresRetroArch: true
+                requiresRetroArch: true,
             };
         }
 
         if (areCoresInstalled(coresDir)) {
             const verification = verifyCoresInstallation(coresDir);
             console.log("RetroArch cores already installed");
-            return {success: true, message: "Cores already installed", alreadyInstalled: true, ...verification};
+            return {
+                success: true,
+                message: "Cores already installed",
+                alreadyInstalled: true,
+                ...verification,
+            };
         }
 
         console.log("RetroArch cores not found, downloading...");
+
+        const hasInternet = await waitForInternet();
+        if (!hasInternet) {
+            return {
+                success: false,
+                message:
+                    "No internet connection available. Cores will be downloaded when internet is restored.",
+                requiresInternet: true,
+            };
+        }
 
         const downloadUrl = buildRetroArchCoresUrl();
         const archivePath = path.join(retroarchDir, "RetroArch_cores.7z");
@@ -141,7 +165,9 @@ export const ensureRetroArchCores = async (workingDir = process.cwd()) => {
             throw new Error("Downloaded archive is empty");
         }
 
-        console.log(`Archive downloaded successfully (${(stats.size / (1024 * 1024)).toFixed(2)} MB)`);
+        console.log(
+            `Archive downloaded successfully (${(stats.size / (1024 * 1024)).toFixed(2)} MB)`
+        );
 
         try {
             await extractCores(archivePath, coresDir);
@@ -159,11 +185,10 @@ export const ensureRetroArchCores = async (workingDir = process.cwd()) => {
         }
 
         console.log("RetroArch cores setup completed successfully");
-        return {success: true, message: "Cores installed successfully", ...verification};
-
+        return { success: true, message: "Cores installed successfully", ...verification };
     } catch (error) {
         console.error("RetroArch cores setup failed:", error.message);
-        return {success: false, message: error.message, error: error};
+        return { success: false, message: error.message, error: error };
     }
 };
 

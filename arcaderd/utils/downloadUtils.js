@@ -1,5 +1,6 @@
 import fs from "fs";
 import https from "https";
+import http from "http";
 import path from "path";
 import os from "os";
 import Seven from "node-7z";
@@ -13,6 +14,40 @@ export const buildRetroArchUrl = (version = RETROARCH_VERSION, arch = getSystemA
 
 export const buildRetroArchCoresUrl = (version = RETROARCH_VERSION, arch = getSystemArchitecture()) =>
     `https://buildbot.libretro.com/stable/${version}/linux/${arch}/RetroArch_cores.7z`;
+
+export const checkInternetConnectivity = async (timeout = 5000) => {
+    return new Promise((resolve) => {
+        const request = http.get("http://detectportal.firefox.com/success.txt", { timeout }, (res) => {
+            resolve(res.statusCode === 200);
+            res.resume();
+        });
+        
+        request.on('error', () => resolve(false));
+        request.on('timeout', () => {
+            request.destroy();
+            resolve(false);
+        });
+    });
+};
+
+export const waitForInternet = async (maxRetries = 30, retryDelay = 10000) => {
+    for (let i = 0; i < maxRetries; i++) {
+        console.log(`Checking internet connectivity (attempt ${i + 1}/${maxRetries})...`);
+        
+        if (await checkInternetConnectivity()) {
+            console.log("Internet connection available");
+            return true;
+        }
+        
+        if (i < maxRetries - 1) {
+            console.log(`No internet connection. Waiting ${retryDelay / 1000} seconds before retry...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+    }
+    
+    console.log("Failed to establish internet connection after all retries");
+    return false;
+};
 
 export const downloadFile = (url, outputPath) => {
     return new Promise((resolve, reject) => {
@@ -74,6 +109,7 @@ export const extract7z = (archivePath, extractDir) => {
         const stream = Seven.extractFull(archivePath, extractDir, {
             $progress: true,
             overwrite: "a",
+            $cherryPick: ["*.so", "*.info"],
         });
 
         stream.on("progress", (progress) => {

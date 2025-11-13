@@ -248,6 +248,11 @@ export const startEmulator = (core, gameFile, gameInfo = null) => {
 
     const proc = cp.spawn([`LD_PRELOAD=${LD_PRELOAD}`, START_CMD].join(" "), {
         shell: true,
+        env: {
+            ...process.env,
+            DISPLAY: process.env.DISPLAY || ":0",
+            XAUTHORITY: process.env.XAUTHORITY || `${process.env.HOME}/.Xauthority`,
+        },
     });
 
     proc.stdout.on("data", (data) => console.log(data.toString()));

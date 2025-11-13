@@ -5,7 +5,12 @@ import {
     isRetroArchInstalled,
     moveDirectoryContents,
 } from "../utils/directoryUtils.js";
-import { buildRetroArchUrl, downloadFile, extract7z } from "../utils/downloadUtils.js";
+import {
+    buildRetroArchUrl,
+    downloadFile,
+    extract7z,
+    waitForInternet,
+} from "../utils/downloadUtils.js";
 
 export const ensureRetroArch = async (workingDir = process.cwd()) => {
     try {
@@ -17,6 +22,13 @@ export const ensureRetroArch = async (workingDir = process.cwd()) => {
         }
 
         console.log("RetroArch not found, downloading...");
+
+        const hasInternet = await waitForInternet();
+        if (!hasInternet) {
+            throw new Error(
+                "No internet connection available. RetroArch will be downloaded when internet is restored."
+            );
+        }
 
         const downloadUrl = buildRetroArchUrl();
         const archivePath = path.join(retroarchDir, "RetroArch.7z");
