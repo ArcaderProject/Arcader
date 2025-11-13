@@ -10,6 +10,8 @@ Wants=graphical-session.target network-online.target
 
 [Service]
 Type=simple
+WorkingDirectory=/var/lib/arcader
+Environment="ARCADER_DASHBOARD_PATH=/usr/share/arcader/dashboard"
 ExecStart=/usr/bin/arcaderd
 Restart=always
 RestartSec=5

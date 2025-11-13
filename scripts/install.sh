@@ -264,7 +264,7 @@ main() {
     
     log_info "Installing for user: $INSTALL_USER"
     echo
-    8
+
     install_arcader_package
     echo
     setup_audio

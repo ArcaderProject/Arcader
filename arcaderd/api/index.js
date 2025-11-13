@@ -50,7 +50,7 @@ apiRouter.use("/save-folders", authenticateRequest, saveFoldersRouter);
 
 app.use("/api", apiRouter);
 
-const dashboardPath = path.join(process.cwd(), "dashboard");
+const dashboardPath = process.env.ARCADER_DASHBOARD_PATH || path.join(process.cwd(), "dashboard");
 app.use(express.static(dashboardPath));
 
 app.use((req, res) => {

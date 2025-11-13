@@ -31,6 +31,12 @@ REAL_USER="${SUDO_USER:-$USER}"
 REAL_USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 
 if [ "$REAL_USER" != "root" ] && [ -n "$REAL_USER_HOME" ]; then
+    mkdir -p /var/lib/arcader
+    chown -R "$REAL_USER:$REAL_USER" /var/lib/arcader
+    chmod -R 755 /var/lib/arcader
+fi
+
+if [ "$REAL_USER" != "root" ] && [ -n "$REAL_USER_HOME" ]; then
     sudo -u "$REAL_USER" XDG_RUNTIME_DIR="/run/user/$(id -u "$REAL_USER")" systemctl --user daemon-reload
     sudo -u "$REAL_USER" XDG_RUNTIME_DIR="/run/user/$(id -u "$REAL_USER")" systemctl --user enable arcaderd.service
     sudo -u "$REAL_USER" XDG_RUNTIME_DIR="/run/user/$(id -u "$REAL_USER")" systemctl --user start arcaderd.service
