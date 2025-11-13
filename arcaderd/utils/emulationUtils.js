@@ -235,8 +235,9 @@ export const startEmulator = (core, gameFile, gameInfo = null) => {
     if (Object.keys(configOverrides).length > 0) applyRetroArchConfigOverrides(configOverrides);
     
     const LD_PRELOAD = isWayland() ? "/usr/lib/x86_64-linux-gnu/libwayland-client.so.0" : "";
-    const retroarchPath = `./data/retroarch/${getRetroArchAppImageName()}`;
-    const START_CMD = `${retroarchPath} -f -L ./data/cores/${core} ${gameFile}`;
+    const retroarchPath = path.join(process.cwd(), "data", "retroarch", getRetroArchAppImageName());
+    const coresPath = path.join(process.cwd(), "data", "cores", core);
+    const START_CMD = `${retroarchPath} -f -L ${coresPath} ${gameFile}`;
 
     if (currentPid && isRunning(currentPid)) {
         console.error("Emulator already running");

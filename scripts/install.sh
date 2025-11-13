@@ -60,7 +60,7 @@ install_arcader_package() {
     
     log_info "Installing required tools and dependencies..."
     apt-get update -qq
-    apt-get install -y -qq curl jq wget ca-certificates p7zip-full
+    apt-get install -y -qq curl jq wget ca-certificates p7zip-full fuse libfuse2 libgpg-error0
     
     log_info "Fetching latest release from GitHub..."
     LATEST_RELEASE=$(curl -s "https://api.github.com/repos/${GITHUB_REPO}/releases/latest")
@@ -122,6 +122,10 @@ X-GNOME-Autostart-enabled=true
 EOF
     
     chown -R "$INSTALL_USER:$INSTALL_USER" "$USER_HOME/.config"
+
+    if pgrep -u "$INSTALL_USER" >/dev/null 2>&1; then
+        sudo -u "$INSTALL_USER" pulseaudio --start 2>/dev/null || true
+    fi
     
     log_info "✓ Audio support configured"
 }
@@ -139,6 +143,9 @@ setup_openbox() {
         mesa-utils \
         libgl1-mesa-dri \
         libglx-mesa0 \
+        mesa-vulkan-drivers \
+        libvulkan1 \
+        vulkan-tools \
         iputils-ping
     
     USER_HOME=$(getent passwd "$INSTALL_USER" | cut -d: -f6)
