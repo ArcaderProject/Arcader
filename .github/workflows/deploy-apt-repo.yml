@@ -1,0 +1,196 @@
+name: Deploy APT Repository
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build Debian Package"]
+    types:
+      - completed
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  update-apt-repo:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+      - name: Download latest .deb artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: build-deb.yml
+          name: arcader-deb-package
+          path: ./deb-files
+          
+      - name: Setup APT repository structure
+        run: |
+          mkdir -p apt-repo/pool/main
+          mkdir -p apt-repo/dists/stable/main/binary-amd64
+          
+      - name: Copy .deb files to pool
+        run: |
+          cp ./deb-files/*.deb apt-repo/pool/main/
+          
+      - name: Install required tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev apt-utils gnupg
+          
+      - name: Import GPG signing key
+        run: |
+          echo "${{ secrets.APT_GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
+          
+      - name: Generate Packages file
+        run: |
+          cd apt-repo
+          dpkg-scanpackages --multiversion pool/ > dists/stable/main/binary-amd64/Packages
+          gzip -k -f dists/stable/main/binary-amd64/Packages
+          
+      - name: Generate Release file
+        run: |
+          cd apt-repo/dists/stable
+          cat > Release <<EOF
+          Origin: Arcader
+          Label: Arcader APT Repository
+          Suite: stable
+          Codename: stable
+          Architectures: amd64
+          Components: main
+          Description: Official Arcader APT Repository
+          Date: $(date -Ru)
+          EOF
+          
+          echo "MD5Sum:" >> Release
+          find . -type f -name "Packages*" -exec md5sum {} \; | sed 's/\.\///' >> Release
+          
+          echo "SHA1:" >> Release
+          find . -type f -name "Packages*" -exec sha1sum {} \; | sed 's/\.\///' >> Release
+          
+          echo "SHA256:" >> Release
+          find . -type f -name "Packages*" -exec sha256sum {} \; | sed 's/\.\///' >> Release
+          
+      - name: Sign Release file
+        run: |
+          cd apt-repo/dists/stable
+          gpg --default-key "${{ secrets.APT_GPG_KEY_ID }}" -abs -o - Release > Release.gpg
+          gpg --default-key "${{ secrets.APT_GPG_KEY_ID }}" --clearsign -o - Release > InRelease
+          
+      - name: Export public GPG key
+        run: |
+          cd apt-repo
+          gpg --armor --export "${{ secrets.APT_GPG_KEY_ID }}" > arcader-archive-keyring.gpg
+          
+      - name: Create index.html
+        run: |
+          cd apt-repo
+          cat > index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Arcader APT Repository</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                      max-width: 800px;
+                      margin: 50px auto;
+                      padding: 20px;
+                      line-height: 1.6;
+                      background: #f5f5f5;
+                  }
+                  .container {
+                      background: white;
+                      padding: 30px;
+                      border-radius: 8px;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  }
+                  h1 { color: #333; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+                  h2 { color: #555; margin-top: 30px; }
+                  code {
+                      background: #f4f4f4;
+                      padding: 2px 6px;
+                      border-radius: 3px;
+                      font-family: 'Courier New', monospace;
+                  }
+                  pre {
+                      background: #f4f4f4;
+                      padding: 15px;
+                      border-radius: 5px;
+                      overflow-x: auto;
+                      border-left: 4px solid #007bff;
+                  }
+                  .note {
+                      background: #e7f3ff;
+                      border-left: 4px solid #007bff;
+                      padding: 15px;
+                      margin: 20px 0;
+                      border-radius: 4px;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Arcader APT Repository</h1>
+                  
+                  <p>Official Arcader APT repository for Debian-based Linux distributions.</p>
+                  
+                  <h2>Add Repository</h2>
+                  
+                  <pre><code># Download and add the GPG key
+curl -fsSL https://arcaderproject.github.io/Arcader/arcader-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/arcader-archive-keyring.gpg
+
+# Add the repository
+echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=amd64] https://arcaderproject.github.io/Arcader stable main" | sudo tee /etc/apt/sources.list.d/arcader.list
+
+# Update package list
+sudo apt update</code></pre>
+                  
+                  <h2>Install</h2>
+                  
+                  <pre><code>sudo apt install arcader</code></pre>
+                  
+                  <h2>Automated Installer</h2>
+                  
+                  <pre><code>curl -fsSL https://raw.githubusercontent.com/ArcaderProject/Arcader/main/scripts/install.sh | sudo bash</code></pre>
+                  
+                  <h2>Enable Automatic Updates</h2>
+                  
+                  <pre><code>sudo apt install unattended-upgrades
+echo 'Unattended-Upgrade::Origins-Pattern {
+        "origin=Arcader";
+};' | sudo tee /etc/apt/apt.conf.d/51arcader-unattended-upgrades</code></pre>
+                  
+                  <div class="note">
+                      <strong>Note:</strong> This repository is hosted on GitHub Pages. Ensure you have a stable internet connection when installing or updating packages.
+                  </div>
+                  
+                  <h2>Resources</h2>
+                  <ul>
+                      <li><a href="https://github.com/ArcaderProject/Arcader">GitHub Repository</a></li>
+                      <li><a href="https://github.com/ArcaderProject/Arcader/issues">Report Issues</a></li>
+                  </ul>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'apt-repo'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
