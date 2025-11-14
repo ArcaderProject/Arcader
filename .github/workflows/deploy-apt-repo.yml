@@ -63,14 +63,11 @@ jobs:
           Date: $(date -Ru)
           EOF
           
-          echo "MD5Sum:" >> Release
-          find . -type f -name "Packages*" -exec md5sum {} \; | sed 's/\.\///' >> Release
-          
-          echo "SHA1:" >> Release
-          find . -type f -name "Packages*" -exec sha1sum {} \; | sed 's/\.\///' >> Release
-          
           echo "SHA256:" >> Release
-          find . -type f -name "Packages*" -exec sha256sum {} \; | sed 's/\.\///' >> Release
+          find . -type f \( -name "Packages" -o -name "Packages.gz" \) -exec sh -c 'sha256sum "$1" | awk "{printf \" %s %7d %s\n\", \$1, $(stat -c%s "$1"), \$2}"' _ {} \; | sed 's/\.\///' >> Release
+          
+          echo "SHA512:" >> Release
+          find . -type f \( -name "Packages" -o -name "Packages.gz" \) -exec sh -c 'sha512sum "$1" | awk "{printf \" %s %7d %s\n\", \$1, $(stat -c%s "$1"), \$2}"' _ {} \; | sed 's/\.\///' >> Release
           
       - name: Sign Release file
         run: |
