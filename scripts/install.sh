@@ -163,7 +163,8 @@ setup_openbox() {
         mesa-vulkan-drivers \
         libvulkan1 \
         vulkan-tools \
-        iputils-ping
+        iputils-ping \
+        unclutter
     
     USER_HOME=$(getent passwd "$INSTALL_USER" | cut -d: -f6)
     
@@ -178,6 +179,8 @@ pulseaudio --start &
 xset s off
 xset -dpms
 xset s noblank
+
+unclutter -idle 0.1 -root &
 
 /usr/bin/arcaderui --fullscreen &
 EOF
