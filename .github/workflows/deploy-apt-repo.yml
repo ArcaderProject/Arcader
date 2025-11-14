@@ -86,7 +86,7 @@ jobs:
       - name: Create index.html
         run: |
           cd apt-repo
-          cat > index.html <<'EOF'
+          cat > index.html <<'HTMLEOF'
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -140,14 +140,11 @@ jobs:
                   
                   <h2>Add Repository</h2>
                   
-                  <pre><code># Download and add the GPG key
-curl -fsSL https://arcaderproject.github.io/Arcader/arcader-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/arcader-archive-keyring.gpg
-
-# Add the repository
-echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=amd64] https://arcaderproject.github.io/Arcader stable main" | sudo tee /etc/apt/sources.list.d/arcader.list
-
-# Update package list
-sudo apt update</code></pre>
+                  <pre><code>curl -fsSL https://arcaderproject.github.io/Arcader/arcader-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/arcader-archive-keyring.gpg
+          
+          echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=amd64] https://arcaderproject.github.io/Arcader stable main" | sudo tee /etc/apt/sources.list.d/arcader.list
+          
+          sudo apt update</code></pre>
                   
                   <h2>Install</h2>
                   
@@ -160,9 +157,10 @@ sudo apt update</code></pre>
                   <h2>Enable Automatic Updates</h2>
                   
                   <pre><code>sudo apt install unattended-upgrades
-echo 'Unattended-Upgrade::Origins-Pattern {
-        "origin=Arcader";
-};' | sudo tee /etc/apt/apt.conf.d/51arcader-unattended-upgrades</code></pre>
+          
+          echo 'Unattended-Upgrade::Origins-Pattern {
+                  "origin=Arcader";
+          };' | sudo tee /etc/apt/apt.conf.d/51arcader-unattended-upgrades</code></pre>
                   
                   <div class="note">
                       <strong>Note:</strong> This repository is hosted on GitHub Pages. Ensure you have a stable internet connection when installing or updating packages.
@@ -176,7 +174,7 @@ echo 'Unattended-Upgrade::Origins-Pattern {
               </div>
           </body>
           </html>
-          EOF
+          HTMLEOF
           
       - name: Setup Pages
         uses: actions/configure-pages@v4
