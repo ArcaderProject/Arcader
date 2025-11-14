@@ -60,41 +60,56 @@ install_arcader_package() {
     
     log_info "Installing required tools and dependencies..."
     apt-get update -qq
-    apt-get install -y -qq curl jq wget ca-certificates p7zip-full fuse libfuse2 libgpg-error0
+    apt-get install -y -qq curl jq wget ca-certificates p7zip-full fuse libfuse2 libgpg-error0 gnupg
     
-    log_info "Fetching latest release from GitHub..."
-    LATEST_RELEASE=$(curl -s "https://api.github.com/repos/${GITHUB_REPO}/releases/latest")
+    log_info "Adding Arcader APT repository..."
+
+    curl -fsSL https://arcaderproject.github.io/Arcader/arcader-archive-keyring.gpg | \
+        gpg --dearmor -o /usr/share/keyrings/arcader-archive-keyring.gpg
     
-    DEB_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[] | select(.name | endswith(".deb")) | .browser_download_url' | head -n 1)
+    echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=amd64] https://arcaderproject.github.io/Arcader stable main" | \
+        tee /etc/apt/sources.list.d/arcader.list > /dev/null
     
-    if [ -z "$DEB_URL" ] || [ "$DEB_URL" = "null" ]; then
-        log_warn "No .deb file found in latest GitHub release"
-        log_info "Checking for local .deb file..."
-        
-        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        LOCAL_DEB=$(find "$SCRIPT_DIR" -maxdepth 1 -name "arcader_*.deb" | head -n 1)
-        
-        if [ -n "$LOCAL_DEB" ]; then
-            log_info "Found local .deb file: $LOCAL_DEB"
-            DEB_FILE="$LOCAL_DEB"
-        else
-            log_error "No .deb file found. Please build the package first or upload to GitHub releases."
-            exit 1
-        fi
-    else
-        log_info "Downloading .deb package from: $DEB_URL"
-        DEB_FILE="/tmp/arcader_latest.deb"
-        wget -q --show-progress -O "$DEB_FILE" "$DEB_URL"
-    fi
+    log_info "Updating package list..."
+    apt-get update -qq
     
-    log_info "Installing Arcader package..."
-    apt-get install -y -qq "$DEB_FILE"
+    log_info "Installing Arcader from APT repository..."
+    apt-get install -y -qq arcader
     
     log_info "✓ Arcader package installed successfully"
 }
 
+setup_unattended_upgrades() {
+    log_info "Step 2: Configuring automatic updates..."
+    
+    log_info "Installing unattended-upgrades..."
+    apt-get install -y -qq unattended-upgrades apt-listchanges
+
+    cat > /etc/apt/apt.conf.d/51arcader-unattended-upgrades <<'EOF'
+Unattended-Upgrade::Origins-Pattern {
+        "origin=Arcader";
+};
+
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+
+Unattended-Upgrade::Automatic-Reboot "false";
+EOF
+
+    cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";
+APT::Periodic::Unattended-Upgrade "1";
+EOF
+    
+    systemctl enable unattended-upgrades
+    systemctl start unattended-upgrades
+    
+    log_info "✓ Automatic updates configured for Arcader"
+}
+
 setup_audio() {
-    log_info "Step 2: Setting up audio support..."
+    log_info "Step 3: Setting up audio support..."
     
     log_info "Installing audio packages..."
     apt-get install -y -qq \
@@ -133,7 +148,7 @@ EOF
 }
 
 setup_openbox() {
-    log_info "Step 3: Installing and configuring Openbox..."
+    log_info "Step 4: Installing and configuring Openbox..."
     
     log_info "Installing Openbox and X server..."
     apt-get install -y -qq \
@@ -188,7 +203,7 @@ EOF
 }
 
 setup_autologin() {
-    log_info "Step 4: Configuring autologin..."
+    log_info "Step 5: Configuring autologin..."
     
     USER_HOME=$(getent passwd "$INSTALL_USER" | cut -d: -f6)
     
@@ -231,7 +246,7 @@ EOF
 }
 
 final_configuration() {
-    log_info "Step 5: Applying final configuration..."
+    log_info "Step 6: Applying final configuration..."
     
     systemctl set-default multi-user.target
     
@@ -262,6 +277,8 @@ main() {
     echo
 
     install_arcader_package
+    echo
+    setup_unattended_upgrades
     echo
     setup_audio
     echo
