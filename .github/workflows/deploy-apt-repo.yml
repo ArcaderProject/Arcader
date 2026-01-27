@@ -19,11 +19,12 @@ jobs:
     
     steps:
       - name: Download latest .deb artifact
-        uses: dawidd6/action-download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          workflow: build-deb.yml
           name: arcader-deb-package
           path: ./deb-files
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.run_id }}
           
       - name: Setup APT repository structure
         run: |
