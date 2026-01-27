@@ -102,15 +102,20 @@ export const downloadFile = (url, outputPath) => {
     });
 };
 
-export const extract7z = (archivePath, extractDir) => {
+export const extract7z = (archivePath, extractDir, options = {}) => {
     return new Promise((resolve, reject) => {
         console.log(`Extracting ${path.basename(archivePath)}...`);
 
-        const stream = Seven.extractFull(archivePath, extractDir, {
+        const extractOptions = {
             $progress: true,
             overwrite: "a",
-            $cherryPick: ["*.so", "*.info"],
-        });
+        };
+        
+        if (options.cherryPick) {
+            extractOptions.$cherryPick = options.cherryPick;
+        }
+
+        const stream = Seven.extractFull(archivePath, extractDir, extractOptions);
 
         stream.on("progress", (progress) => {
             if (progress.percent !== undefined) {

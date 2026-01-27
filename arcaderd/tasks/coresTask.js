@@ -85,19 +85,19 @@ const extractCores = async (archivePath, coresDir) => {
         }
 
         const coreFiles = fs.readdirSync(sourceCoresDir);
-        let copiedCount = 0;
+        let copiedCores = 0;
 
         for (const file of coreFiles) {
-            if (file.endsWith("_libretro.so")) {
+            if (file.endsWith("_libretro.so") || file.endsWith("_libretro.info")) {
                 const sourcePath = path.join(sourceCoresDir, file);
                 const targetPath = path.join(coresDir, file);
 
                 fs.copyFileSync(sourcePath, targetPath);
-                copiedCount++;
+                if (file.endsWith(".so")) copiedCores++;
             }
         }
 
-        console.log(`Copied ${copiedCount} core libraries to ${coresDir}`);
+        console.log(`Copied ${copiedCores} core libraries to ${coresDir}`);
 
         if (fs.existsSync(tempExtractDir)) {
             fs.rmSync(tempExtractDir, { recursive: true, force: true });
