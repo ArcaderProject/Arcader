@@ -4,7 +4,7 @@ set -e
 command -v bun >/dev/null 2>&1 || { echo "Error: Bun not installed"; exit 1; }
 command -v godot >/dev/null 2>&1 || { echo "Error: Godot not installed"; exit 1; }
 
-GODOT_VERSION=4.6-stable
+GODOT_VERSION=4.6
 TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
 
 if [ ! -f "$TEMPLATE_DIR/linux_release.x86_64" ]; then
