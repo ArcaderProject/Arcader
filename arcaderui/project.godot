@@ -8,12 +8,16 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="arcaderui"
 run/main_scene="uid://dvixy6d18px4f"
-config/features=PackedStringArray("4.5", "GL Compatibility")
-boot_splash/fullsize=false
+config/features=PackedStringArray("4.6", "GL Compatibility")
+boot_splash/stretch_mode=0
 boot_splash/image="uid://otgvq38r1ita"
 config/icon="uid://c4d5v0feafg1q"
 
