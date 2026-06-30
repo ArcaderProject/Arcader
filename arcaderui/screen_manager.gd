@@ -3,6 +3,7 @@ extends Node
 const SCENE_LOADING = "res://scenes/Loading.tscn"
 const SCENE_MAIN_MENU = "res://scenes/MainMenu.tscn"
 const SCENE_GAMES_LIST = "res://scenes/GamesList.tscn"
+const SCENE_SEARCH = "res://scenes/Search.tscn"
 
 func _ready() -> void:
 	if Communicator.has_signal("screen_updated"):
@@ -23,3 +24,6 @@ func change_to_main_menu() -> void:
 
 func change_to_games_list() -> void:
 	get_tree().change_scene_to_file(SCENE_GAMES_LIST)
+
+func change_to_search() -> void:
+	get_tree().change_scene_to_file(SCENE_SEARCH)

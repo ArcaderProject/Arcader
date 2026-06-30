@@ -1,9 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://cvo8yhg8qn8xd"]
+[gd_scene load_steps=2 format=3 uid="uid://cvo8yhg8qn8xd"]
 
 [ext_resource type="Script" uid="uid://bckbdm4177fkp" path="res://scenes/GamesList.gd" id="1_games_list"]
-[ext_resource type="Texture2D" uid="uid://crwtfrody0mss" path="res://assets/background.png" id="2_background"]
 
-[node name="GamesList" type="Control"]
+[node name="GameSelect" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,58 +10,3 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_games_list")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 50.0
-offset_top = 20.0
-offset_right = -50.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Title" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 48
-text = "GAMES LIST"
-horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-follow_focus = true
-
-[node name="GamesContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-columns = 5
-
-[node name="LoadingLabel" type="Label" parent="VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Loading games..."
-horizontal_alignment = 1
-
-[node name="ErrorLabel" type="Label" parent="VBoxContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Error loading games"
-horizontal_alignment = 1
-
-[node name="Background" type="Sprite2D" parent="."]
-z_index = -4096
-scale = Vector2(0.3, 0.29999998)
-texture = ExtResource("2_background")
-centered = false
