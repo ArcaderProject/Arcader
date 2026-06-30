@@ -14,9 +14,9 @@ jobs:
       matrix:
         include:
           - deb_arch: amd64
-            rust_target: x86_64-unknown-linux-gnu
+            rust_target: x86_64-unknown-linux-musl
           - deb_arch: i386
-            rust_target: i686-unknown-linux-gnu
+            rust_target: i686-unknown-linux-musl
 
     env:
       DEB_ARCH: ${{ matrix.deb_arch }}
@@ -30,9 +30,13 @@ jobs:
       with:
         targets: ${{ matrix.rust_target }}
 
-    - name: Install 32-bit build dependencies
-      if: matrix.deb_arch == 'i386'
-      run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+    - name: Install zig
+      uses: mlugg/setup-zig@v2
+
+    - name: Install cargo-zigbuild
+      uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-zigbuild
 
     - name: Set up pnpm
       uses: pnpm/action-setup@v4

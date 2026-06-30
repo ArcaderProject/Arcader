@@ -4,11 +4,11 @@ DEB_ARCH="${DEB_ARCH:-amd64}"
 
 case "$DEB_ARCH" in
     amd64)
-        RUST_TARGET="x86_64-unknown-linux-gnu"
+        RUST_TARGET="x86_64-unknown-linux-musl"
         GODOT_PRESET="Linux/X11"
         ;;
     i386)
-        RUST_TARGET="i686-unknown-linux-gnu"
+        RUST_TARGET="i686-unknown-linux-musl"
         GODOT_PRESET="Linux/X11 (32-bit)"
         ;;
     *)

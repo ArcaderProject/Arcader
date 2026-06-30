@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/arch-env.sh"
 
 command -v cargo >/dev/null 2>&1 || { echo "Error: cargo (Rust) not installed"; exit 1; }
+command -v cargo-zigbuild >/dev/null 2>&1 || { echo "Error: cargo-zigbuild not installed (pip install cargo-zigbuild ziglang)"; exit 1; }
 command -v godot >/dev/null 2>&1 || { echo "Error: Godot not installed"; exit 1; }
 
 echo "Building for $DEB_ARCH (rust: $RUST_TARGET, godot: $GODOT_PRESET)"
@@ -29,7 +30,7 @@ fi
 
 cd arcaderd
 rustup target add "$RUST_TARGET" 2>/dev/null || true
-cargo build --release --target "$RUST_TARGET"
+cargo zigbuild --release --target "$RUST_TARGET"
 cp "target/$RUST_TARGET/release/arcaderd" arcaderd
 cd ..
 
