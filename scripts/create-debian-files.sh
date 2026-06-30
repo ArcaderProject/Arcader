@@ -13,7 +13,7 @@ Version: ${VERSION}
 Section: games
 Priority: optional
 Architecture: ${DEB_ARCH}
-Depends: libc6, systemd, p7zip-full
+Depends: libc6, systemd, p7zip-full, avrdude
 Maintainer: ArcaderProject <noreply@github.com>
 Description: Arcader Gaming System
  Arcader gaming system with UI and daemon service.
@@ -59,6 +59,8 @@ USER_ID=$(id -u "$INSTALL_USER")
 mkdir -p /var/lib/arcader
 chown -R "$INSTALL_USER:$INSTALL_USER" /var/lib/arcader
 chmod -R 755 /var/lib/arcader
+
+usermod -aG dialout "$INSTALL_USER" 2>/dev/null || true
 
 loginctl enable-linger "$INSTALL_USER" 2>/dev/null || true
 

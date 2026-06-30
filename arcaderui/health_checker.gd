@@ -67,7 +67,7 @@ func _on_connection_lost() -> void:
 
 func _on_connection_restored() -> void:
 	last_connection_state = true
-	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+	get_tree().change_scene_to_file("res://scenes/CoinScreen.tscn")
 
 func _ensure_loading_scene() -> void:
 	var current_scene = get_tree().current_scene

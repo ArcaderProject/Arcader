@@ -10,6 +10,8 @@ command -v godot >/dev/null 2>&1 || { echo "Error: Godot not installed"; exit 1;
 
 echo "Building for $DEB_ARCH (rust: $RUST_TARGET, godot: $GODOT_PRESET)"
 
+"$SCRIPT_DIR/build-firmware.sh"
+
 GODOT_VERSION=4.6
 TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
 

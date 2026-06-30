@@ -1,4 +1,5 @@
 mod api;
+mod coin;
 mod daemon;
 mod migrations;
 mod tasks;
@@ -15,6 +16,18 @@ use crate::utils::game_saves::ensure_global_profile;
 
 #[tokio::main]
 async fn main() {
+    match std::env::args().nth(1).as_deref() {
+        Some("coin-selftest") => {
+            coin::selftest();
+            return;
+        }
+        Some("coin-flash") => {
+            coin::force_flash();
+            return;
+        }
+        _ => {}
+    }
+
     connect_to_database();
     run_migrations();
 
@@ -39,6 +52,8 @@ async fn main() {
     tokio::spawn(async {
         start_daemon_socket().await;
     });
+
+    coin::start();
 
     start_server().await;
 }

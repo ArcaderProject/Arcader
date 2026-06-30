@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { ConfigContext } from "@/common/contexts/ConfigProvider";
+import { getRequest } from "@/common/utils/RequestUtil";
 import {
     Tabs,
     TabsContent,
@@ -29,6 +30,32 @@ export const Settings = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [copiedPassword, setCopiedPassword] = useState(false);
+
+    interface CoinStatus {
+        credits: number;
+        hardwareConnected: boolean;
+        freePlay: boolean;
+        coinSlotEnabled: boolean;
+    }
+    const [coinStatus, setCoinStatus] = useState<CoinStatus | null>(null);
+
+    useEffect(() => {
+        let active = true;
+        const poll = async () => {
+            try {
+                const data = await getRequest("coin/status");
+                if (active) setCoinStatus(data);
+            } catch {
+                if (active) setCoinStatus(null);
+            }
+        };
+        poll();
+        const interval = setInterval(poll, 3000);
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
+    }, []);
 
     useEffect(() => {
         if (config) {
@@ -150,6 +177,40 @@ export const Settings = () => {
                         <TabsPanels>
                             <TabsContent>
                                 <div className="space-y-6">
+                                    <div className="flex items-center justify-between p-4 border-2 border-border rounded bg-muted/10">
+                                        <div>
+                                            <label className="block text-sm font-head font-bold uppercase tracking-wider">
+                                                Coin Acceptor
+                                            </label>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Live hardware status
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span
+                                                className={`px-3 py-1 text-xs font-head font-bold uppercase border-2 rounded ${
+                                                    coinStatus?.hardwareConnected
+                                                        ? "border-primary text-primary"
+                                                        : "border-destructive text-destructive"
+                                                }`}
+                                            >
+                                                {coinStatus?.hardwareConnected
+                                                    ? "Connected"
+                                                    : "Not Detected"}
+                                            </span>
+                                            <span className="px-3 py-1 text-xs font-head font-bold uppercase border-2 border-border rounded">
+                                                {coinStatus
+                                                    ? `${coinStatus.credits} CREDITS`
+                                                    : "—"}
+                                            </span>
+                                            {coinStatus?.freePlay && (
+                                                <span className="px-3 py-1 text-xs font-head font-bold uppercase border-2 border-accent text-accent rounded">
+                                                    Free Play
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-head font-bold mb-2 uppercase tracking-wider">
                                             Insert Message

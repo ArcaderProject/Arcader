@@ -100,6 +100,7 @@ fn build_app() -> Router {
         .nest("/games", routes::games::router())
         .nest("/lists", routes::game_lists::router())
         .nest("/config", routes::config::router())
+        .nest("/coin", routes::coin::router())
         .nest("/save-folders", routes::save_folders::router())
         .layer(middleware::from_fn(authenticate_request));
 

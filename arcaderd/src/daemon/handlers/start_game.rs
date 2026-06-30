@@ -1,5 +1,6 @@
 use serde_json::{json, Value};
 
+use crate::coin::{coin_slot_enabled, credits};
 use crate::daemon::socket::{broadcast_to_all, send_response, ClientHandle};
 use crate::utils::emulation::{get_current_game, start_by_filename};
 use crate::utils::games::get_all_games;
@@ -44,6 +45,14 @@ async fn start_game_inner(request_id: Value, data: Value) -> Result<Value, Strin
         return Err("A game is already running".to_string());
     }
 
+    let mut consumed_credit = false;
+    if coin_slot_enabled() && !credits::is_free_play() {
+        if !credits::try_consume() {
+            return Err("No credits available".to_string());
+        }
+        consumed_credit = true;
+    }
+
     let filename = game
         .get("filename")
         .and_then(|v| v.as_str())
@@ -51,7 +60,14 @@ async fn start_game_inner(request_id: Value, data: Value) -> Result<Value, Strin
         .to_string();
 
     if !start_by_filename(&filename, Some(Value::Object(game.clone()))) {
+        if consumed_credit {
+            credits::add(1);
+        }
         return Err("Failed to start game".to_string());
+    }
+
+    if consumed_credit {
+        crate::coin::broadcast_coin_status();
     }
 
     Ok(json!({

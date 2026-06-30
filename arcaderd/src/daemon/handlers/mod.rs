@@ -1,3 +1,4 @@
+pub mod coin;
 pub mod cover;
 pub mod games;
 pub mod hello;
@@ -28,6 +29,14 @@ pub async fn dispatch(
         }
         cover::GET_COVER_MESSAGE_TYPE => {
             cover::handle_get_cover(handle, request_id, data);
+            true
+        }
+        coin::GET_COIN_STATUS_MESSAGE_TYPE => {
+            coin::handle_get_coin_status(handle, request_id);
+            true
+        }
+        coin::SET_FREE_PLAY_MESSAGE_TYPE => {
+            coin::handle_set_free_play(handle, request_id, data);
             true
         }
         _ => false,

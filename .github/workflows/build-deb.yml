@@ -50,6 +50,9 @@ jobs:
         use-dotnet: false
         include-templates: true
 
+    - name: Install arduino-cli (coin acceptor firmware)
+      uses: arduino/setup-arduino-cli@v2
+
     - name: Make scripts executable
       run: chmod +x scripts/*.sh
 

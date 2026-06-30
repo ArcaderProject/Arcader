@@ -6,6 +6,8 @@ signal game_started(game_info: Dictionary)
 signal game_start_error(error: String)
 signal screen_updated(screen: String)
 signal cover_received(game_id: String, cover_data: String)
+signal coin_status(status: Dictionary)
+signal coin_inserted(status: Dictionary)
 
 var pending_requests := {}
 var next_request_id := 0
@@ -47,6 +49,28 @@ func get_cover(game_id: String) -> void:
 		}
 	})
 
+func get_coin_status() -> void:
+	var request_id = _generate_request_id()
+	pending_requests[request_id] = "GET_COIN_STATUS"
+
+	send_message({
+		"type": "GET_COIN_STATUS",
+		"requestId": request_id,
+		"data": {}
+	})
+
+func set_free_play(enabled: bool) -> void:
+	var request_id = _generate_request_id()
+	pending_requests[request_id] = "SET_FREE_PLAY"
+
+	send_message({
+		"type": "SET_FREE_PLAY",
+		"requestId": request_id,
+		"data": {
+			"enabled": enabled
+		}
+	})
+
 func _generate_request_id() -> String:
 	next_request_id += 1
 	return "req_" + str(next_request_id)
@@ -60,10 +84,20 @@ func handle_message(msg: Dictionary) -> void:
 	if msg["type"] == "UPDATE_SCREEN":
 		_handle_update_screen(msg)
 		return
-	
+
+	if msg["type"] == "COIN_INSERTED":
+		var data = msg.get("data", {})
+		emit_signal("coin_inserted", data)
+		emit_signal("coin_status", data)
+		return
+
+	if msg["type"] == "COIN_STATUS":
+		emit_signal("coin_status", msg.get("data", {}))
+		return
+
 	if msg.has("requestId"):
 		var request_id = msg["requestId"]
-		
+
 		match msg["type"]:
 			"GET_GAMES_RESPONSE":
 				_handle_games_response(msg)
@@ -76,6 +110,10 @@ func handle_message(msg: Dictionary) -> void:
 				pending_requests.erase(request_id)
 			"GET_COVER_RESPONSE":
 				_handle_cover_response(msg)
+				pending_requests.erase(request_id)
+			"GET_COIN_STATUS_RESPONSE", "SET_FREE_PLAY_RESPONSE":
+				if msg.get("success", false):
+					emit_signal("coin_status", msg.get("data", {}))
 				pending_requests.erase(request_id)
 
 func _handle_games_response(msg: Dictionary) -> void:

@@ -423,7 +423,7 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
             None => println!("Emulator exited with code null"),
         }
         stop();
-        broadcast_screen("SELECTION");
+        broadcast_screen(post_game_screen());
     });
 
     *CURRENT_PID.lock().unwrap() = pid;
@@ -436,6 +436,17 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
 
 fn broadcast_screen(screen: &str) {
     broadcast_update_screen(screen);
+}
+
+fn post_game_screen() -> &'static str {
+    let needs_coin = crate::coin::coin_slot_enabled()
+        && !crate::coin::credits::is_free_play()
+        && crate::coin::credits::get() == 0;
+    if needs_coin {
+        "COIN"
+    } else {
+        "SELECTION"
+    }
 }
 
 pub fn start(game_file: &str, game_info: Option<Value>) -> bool {

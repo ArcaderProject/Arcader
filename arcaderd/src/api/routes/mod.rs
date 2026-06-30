@@ -1,3 +1,4 @@
+pub mod coin;
 pub mod config;
 pub mod game_lists;
 pub mod games;
