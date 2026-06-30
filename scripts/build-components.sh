@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
-command -v bun >/dev/null 2>&1 || { echo "Error: Bun not installed"; exit 1; }
+command -v cargo >/dev/null 2>&1 || { echo "Error: cargo (Rust) not installed"; exit 1; }
 command -v godot >/dev/null 2>&1 || { echo "Error: Godot not installed"; exit 1; }
+
+ARCADERD_TARGET="${ARCADERD_TARGET:-i686-unknown-linux-gnu}"
 
 GODOT_VERSION=4.6
 TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
@@ -23,8 +25,9 @@ if [ ! -f "$TEMPLATE_DIR/linux_release.x86_64" ]; then
 fi
 
 cd arcaderd
-bun install
-bun build --compile --minify --target=bun-linux-x64 ./index.js --outfile=arcaderd
+rustup target add "$ARCADERD_TARGET" 2>/dev/null || true
+cargo build --release --target "$ARCADERD_TARGET"
+cp "target/$ARCADERD_TARGET/release/arcaderd" arcaderd
 cd ..
 
 cd dashboard

@@ -13,10 +13,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Bun
-      uses: oven-sh/setup-bun@v2
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
       with:
-        bun-version: latest
+        targets: i686-unknown-linux-gnu
+
+    - name: Install 32-bit build dependencies
+      run: sudo apt-get update && sudo apt-get install -y gcc-multilib
 
     - name: Set up pnpm
       uses: pnpm/action-setup@v4
