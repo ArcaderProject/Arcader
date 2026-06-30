@@ -2,9 +2,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/arch-env.sh"
 
 rm -rf build/
-rm -f *.deb
+rm -f arcader_*_"${DEB_ARCH}".deb
 
 command -v cargo >/dev/null 2>&1 || { echo "Error: cargo (Rust) not installed"; exit 1; }
 command -v pnpm >/dev/null 2>&1 || { echo "Error: pnpm not installed"; exit 1; }

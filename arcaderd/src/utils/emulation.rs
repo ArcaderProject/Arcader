@@ -198,6 +198,14 @@ fn is_wayland() -> bool {
     std::env::var("XDG_SESSION_TYPE").as_deref() == Ok("wayland")
 }
 
+fn wayland_lib_arch() -> &'static str {
+    if std::env::consts::ARCH == "x86_64" {
+        "x86_64"
+    } else {
+        "i386"
+    }
+}
+
 fn copy_dir_recursive(src: &Path, dest: &Path) {
     if !dest.exists() {
         fs::create_dir_all(dest).unwrap();
@@ -329,22 +337,11 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         apply_retro_arch_config_overrides(&config_overrides);
     }
 
-    let ld_preload = if is_wayland() {
-        "/usr/lib/x86_64-linux-gnu/libwayland-client.so.0"
-    } else {
-        ""
-    };
     let retroarch_path = cwd()
         .join("data")
         .join("retroarch")
         .join(get_retro_arch_app_image_name());
     let cores_path = cwd().join("data").join("cores").join(core);
-    let start_cmd = format!(
-        "{} -f -L {} {}",
-        retroarch_path.display(),
-        cores_path.display(),
-        game_file
-    );
 
     {
         let current = *CURRENT_PID.lock().unwrap();
@@ -356,9 +353,12 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         }
     }
 
-    println!("Spawning emulator with command: {}", start_cmd);
-
-    let full_cmd = format!("LD_PRELOAD={} {}", ld_preload, start_cmd);
+    println!(
+        "Spawning emulator: {} -f -L {} {}",
+        retroarch_path.display(),
+        cores_path.display(),
+        game_file
+    );
 
     let display = std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string());
     let xauthority = std::env::var("XAUTHORITY").unwrap_or_else(|_| {
@@ -366,15 +366,27 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         format!("{}/.Xauthority", home)
     });
 
-    let mut command = tokio::process::Command::new("sh");
+    let mut command = tokio::process::Command::new(&retroarch_path);
     command
-        .arg("-c")
-        .arg(&full_cmd)
+        .arg("-f")
+        .arg("-L")
+        .arg(&cores_path)
+        .arg(game_file)
         .env("DISPLAY", display)
         .env("XAUTHORITY", xauthority)
         .process_group(0)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+
+    if is_wayland() {
+        command.env(
+            "LD_PRELOAD",
+            format!(
+                "/usr/lib/{}-linux-gnu/libwayland-client.so.0",
+                wayland_lib_arch()
+            ),
+        );
+    }
 
     let mut child = match command.spawn() {
         Ok(c) => c,

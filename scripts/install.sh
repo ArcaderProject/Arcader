@@ -67,7 +67,8 @@ install_arcader_package() {
     curl -fsSL https://arcaderproject.github.io/Arcader/arcader-archive-keyring.gpg | \
         gpg --dearmor -o /usr/share/keyrings/arcader-archive-keyring.gpg
     
-    echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=amd64] https://arcaderproject.github.io/Arcader stable main" | \
+    HOST_ARCH=$(dpkg --print-architecture)
+    echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=${HOST_ARCH}] https://arcaderproject.github.io/Arcader stable main" | \
         tee /etc/apt/sources.list.d/arcader.list > /dev/null
     
     log_info "Updating package list..."

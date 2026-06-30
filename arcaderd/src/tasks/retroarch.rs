@@ -35,7 +35,8 @@ pub async fn ensure_retro_arch() -> Result<(), String> {
     download_file(&download_url, &archive_path).await?;
     extract_7z(&archive_path, &retroarch_dir)?;
 
-    let extracted_sub_dir = retroarch_dir.join("RetroArch-Linux-x86_64");
+    let extracted_sub_dir =
+        retroarch_dir.join(format!("RetroArch-Linux-{}", get_system_architecture()));
     if extracted_sub_dir.exists() {
         move_directory_contents(&extracted_sub_dir, &retroarch_dir);
         println!("Moved RetroArch files to retroarch directory");

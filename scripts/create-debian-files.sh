@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/arch-env.sh"
+
 VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
 VERSION=${VERSION#v}
 
@@ -9,7 +12,7 @@ Package: arcader
 Version: ${VERSION}
 Section: games
 Priority: optional
-Architecture: amd64
+Architecture: ${DEB_ARCH}
 Depends: libc6, systemd, p7zip-full
 Maintainer: ArcaderProject <noreply@github.com>
 Description: Arcader Gaming System

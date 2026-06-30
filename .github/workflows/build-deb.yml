@@ -8,7 +8,19 @@ on:
 jobs:
   build-deb:
     runs-on: ubuntu-latest
-    
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - deb_arch: amd64
+            rust_target: x86_64-unknown-linux-gnu
+          - deb_arch: i386
+            rust_target: i686-unknown-linux-gnu
+
+    env:
+      DEB_ARCH: ${{ matrix.deb_arch }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -16,9 +28,10 @@ jobs:
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        targets: i686-unknown-linux-gnu
+        targets: ${{ matrix.rust_target }}
 
     - name: Install 32-bit build dependencies
+      if: matrix.deb_arch == 'i386'
       run: sudo apt-get update && sudo apt-get install -y gcc-multilib
 
     - name: Set up pnpm
@@ -54,7 +67,7 @@ jobs:
     - name: Upload .deb package
       uses: actions/upload-artifact@v4
       with:
-        name: arcader-deb-package
+        name: arcader-deb-package-${{ matrix.deb_arch }}
         path: "*.deb"
         retention-days: 30
 

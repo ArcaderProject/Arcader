@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 
 use crate::api::helpers::{error_response, json_response, map_to_value, ok_json, parse_body};
 use crate::utils::config::{get_config, set_config};
-use crate::utils::database::{execute, query_json, query_one_json, try_execute};
+use crate::utils::database::{execute, query_json, query_one_json, try_execute, with_transaction};
 
 const CONFIG_KEY: &str = "selected_list_id";
 
@@ -194,16 +194,26 @@ async fn set_list_games(Path(id): Path<String>, body: Bytes) -> Response {
         return error_response(StatusCode::FORBIDDEN, "Cannot edit games in the default list");
     }
 
-    execute("DELETE FROM game_list_items WHERE list_id = ?", &[&id]);
+    let inserted = with_transaction(|tx| {
+        tx.execute("DELETE FROM game_list_items WHERE list_id = ?", [id.as_str()])?;
 
-    for game_id in &game_ids {
-        if let Some(gid) = game_id.as_str() {
-            execute(
-                "INSERT INTO game_list_items (list_id, game_id)\n                                           VALUES (?, ?)",
-                &[&id, &gid],
-            );
+        let mut stmt =
+            tx.prepare("INSERT INTO game_list_items (list_id, game_id) VALUES (?, ?)")?;
+        let mut count = 0usize;
+        for game_id in &game_ids {
+            if let Some(gid) = game_id.as_str() {
+                stmt.execute([id.as_str(), gid])?;
+                count += 1;
+            }
+        }
+        Ok(count)
+    });
+
+    match inserted {
+        Ok(count) => ok_json(json!({ "message": "Games updated successfully", "count": count })),
+        Err(message) => {
+            eprintln!("Error updating games in list: {}", message);
+            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to update games in list")
         }
     }
-
-    ok_json(json!({ "message": "Games updated successfully", "count": game_ids.len() }))
 }

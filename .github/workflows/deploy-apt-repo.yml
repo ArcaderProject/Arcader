@@ -18,19 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Download latest .deb artifact
+      - name: Download latest .deb artifacts
         uses: actions/download-artifact@v4
         with:
-          name: arcader-deb-package
+          pattern: arcader-deb-package-*
+          merge-multiple: true
           path: ./deb-files
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.run_id }}
-          
+
       - name: Setup APT repository structure
         run: |
           mkdir -p apt-repo/pool/main
           mkdir -p apt-repo/dists/stable/main/binary-amd64
-          
+          mkdir -p apt-repo/dists/stable/main/binary-i386
+
       - name: Copy .deb files to pool
         run: |
           cp ./deb-files/*.deb apt-repo/pool/main/
@@ -44,11 +46,13 @@ jobs:
         run: |
           echo "${{ secrets.APT_GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
           
-      - name: Generate Packages file
+      - name: Generate Packages files
         run: |
           cd apt-repo
-          dpkg-scanpackages --multiversion pool/ > dists/stable/main/binary-amd64/Packages
-          gzip -k -f dists/stable/main/binary-amd64/Packages
+          for arch in amd64 i386; do
+            dpkg-scanpackages --multiversion --arch "$arch" pool/ > "dists/stable/main/binary-$arch/Packages"
+            gzip -k -f "dists/stable/main/binary-$arch/Packages"
+          done
           
       - name: Generate Release file
         run: |
@@ -58,7 +62,7 @@ jobs:
           Label: Arcader APT Repository
           Suite: stable
           Codename: stable
-          Architectures: amd64
+          Architectures: amd64 i386
           Components: main
           Description: Official Arcader APT Repository
           Date: $(date -Ru)
@@ -140,7 +144,7 @@ jobs:
                   
                   <pre><code>curl -fsSL https://arcaderproject.github.io/Arcader/arcader-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/arcader-archive-keyring.gpg
           
-          echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=amd64] https://arcaderproject.github.io/Arcader stable main" | sudo tee /etc/apt/sources.list.d/arcader.list
+          echo "deb [signed-by=/usr/share/keyrings/arcader-archive-keyring.gpg arch=amd64,i386] https://arcaderproject.github.io/Arcader stable main" | sudo tee /etc/apt/sources.list.d/arcader.list
           
           sudo apt update</code></pre>
                   

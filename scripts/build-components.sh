@@ -1,10 +1,13 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/arch-env.sh"
+
 command -v cargo >/dev/null 2>&1 || { echo "Error: cargo (Rust) not installed"; exit 1; }
 command -v godot >/dev/null 2>&1 || { echo "Error: Godot not installed"; exit 1; }
 
-ARCADERD_TARGET="${ARCADERD_TARGET:-i686-unknown-linux-gnu}"
+echo "Building for $DEB_ARCH (rust: $RUST_TARGET, godot: $GODOT_PRESET)"
 
 GODOT_VERSION=4.6
 TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
@@ -25,9 +28,9 @@ if [ ! -f "$TEMPLATE_DIR/linux_release.x86_64" ]; then
 fi
 
 cd arcaderd
-rustup target add "$ARCADERD_TARGET" 2>/dev/null || true
-cargo build --release --target "$ARCADERD_TARGET"
-cp "target/$ARCADERD_TARGET/release/arcaderd" arcaderd
+rustup target add "$RUST_TARGET" 2>/dev/null || true
+cargo build --release --target "$RUST_TARGET"
+cp "target/$RUST_TARGET/release/arcaderd" arcaderd
 cd ..
 
 cd dashboard
@@ -38,5 +41,5 @@ cd ..
 
 cd arcaderui
 mkdir -p ../build/arcaderui
-godot --headless --export-release "Linux/X11" ../build/arcaderui/arcaderui
+godot --headless --export-release "$GODOT_PRESET" ../build/arcaderui/arcaderui
 cd ..

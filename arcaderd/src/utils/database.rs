@@ -75,3 +75,13 @@ pub fn try_execute(sql: &str, params: &[&dyn ToSql]) -> Result<usize, String> {
     let db = get_database();
     db.execute(sql, params).map_err(|e| e.to_string())
 }
+
+pub fn with_transaction<T>(
+    f: impl FnOnce(&rusqlite::Transaction) -> rusqlite::Result<T>,
+) -> Result<T, String> {
+    let mut db = get_database();
+    let tx = db.transaction().map_err(|e| e.to_string())?;
+    let result = f(&tx).map_err(|e| e.to_string())?;
+    tx.commit().map_err(|e| e.to_string())?;
+    Ok(result)
+}

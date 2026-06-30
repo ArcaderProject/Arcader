@@ -97,14 +97,16 @@ async fn spa_fallback(uri: Uri) -> Response {
 
 fn build_app() -> Router {
     let protected = Router::new()
-        .nest("/health", routes::health::router())
         .nest("/games", routes::games::router())
         .nest("/lists", routes::game_lists::router())
         .nest("/config", routes::config::router())
         .nest("/save-folders", routes::save_folders::router())
         .layer(middleware::from_fn(authenticate_request));
 
-    let api_router = Router::new().route("/login", post(login)).merge(protected);
+    let api_router = Router::new()
+        .route("/login", post(login))
+        .nest("/health", routes::health::router())
+        .merge(protected);
 
     Router::new()
         .nest("/api", api_router)

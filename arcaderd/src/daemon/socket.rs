@@ -159,7 +159,7 @@ pub async fn start_daemon_socket() {
         let reader_client_id = client_id.clone();
         let handle = tx.clone();
         tokio::spawn(async move {
-            let mut message_buffer = String::new();
+            let mut message_buffer: Vec<u8> = Vec::new();
             let mut buf = [0u8; 8192];
 
             loop {
@@ -170,15 +170,14 @@ pub async fn start_daemon_socket() {
                         break;
                     }
                     Ok(n) => {
-                        message_buffer.push_str(&String::from_utf8_lossy(&buf[..n]));
+                        message_buffer.extend_from_slice(&buf[..n]);
 
-                        while let Some(newline_pos) = message_buffer.find('\n') {
-                            let complete_message: String =
-                                message_buffer.drain(..=newline_pos).collect();
-                            let complete_message = complete_message
-                                .strip_suffix('\n')
-                                .unwrap_or(&complete_message)
-                                .to_string();
+                        while let Some(newline_pos) =
+                            message_buffer.iter().position(|&b| b == b'\n')
+                        {
+                            let line: Vec<u8> = message_buffer.drain(..=newline_pos).collect();
+                            let complete_message =
+                                String::from_utf8_lossy(&line[..line.len() - 1]);
 
                             if !complete_message.trim().is_empty() {
                                 match serde_json::from_str::<Value>(&complete_message) {
