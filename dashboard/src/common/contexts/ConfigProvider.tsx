@@ -8,6 +8,8 @@ export interface Config {
     "coinScreen.infoMessage": string;
     "coinScreen.konamiCodeEnabled": boolean;
     "coinScreen.coinSlotEnabled": boolean;
+    "coinScreen.timeModeEnabled": boolean;
+    "coinScreen.minutesPerCoin": string;
     steamGridDbApiKey: string | null;
 }
 

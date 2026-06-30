@@ -183,6 +183,8 @@ xset s noblank
 
 unclutter -idle 0.1 -root &
 
+picom -b 2>/dev/null || true
+
 /usr/bin/arcaderui --fullscreen &
 EOF
     

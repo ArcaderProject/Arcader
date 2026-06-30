@@ -292,6 +292,9 @@ fn cleanup_temp_save_folder(temp_path: &str) {
 pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> bool {
     let mut config_overrides: HashMap<String, String> = HashMap::new();
 
+    config_overrides.insert("video_fullscreen".to_string(), "true".to_string());
+    config_overrides.insert("video_windowed_fullscreen".to_string(), "true".to_string());
+
     if let Some(active_save_folder) = get_active_save_folder() {
         let mut save_path = get_save_folder_path(&active_save_folder.uuid);
 
@@ -423,12 +426,14 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
             None => println!("Emulator exited with code null"),
         }
         stop();
+        crate::coin::notify_game_stopped();
         broadcast_screen(post_game_screen());
     });
 
     *CURRENT_PID.lock().unwrap() = pid;
     *CURRENT_GAME.lock().unwrap() = game_info;
 
+    crate::coin::notify_game_started();
     broadcast_screen("LOADING");
 
     true
@@ -439,10 +444,15 @@ fn broadcast_screen(screen: &str) {
 }
 
 fn post_game_screen() -> &'static str {
-    let needs_coin = crate::coin::coin_slot_enabled()
-        && !crate::coin::credits::is_free_play()
-        && crate::coin::credits::get() == 0;
-    if needs_coin {
+    if !crate::coin::coin_slot_enabled() || crate::coin::credits::is_free_play() {
+        return "SELECTION";
+    }
+    let exhausted = if crate::coin::time_mode_enabled() {
+        crate::coin::timebank::get() <= 0
+    } else {
+        crate::coin::credits::get() == 0
+    };
+    if exhausted {
         "COIN"
     } else {
         "SELECTION"

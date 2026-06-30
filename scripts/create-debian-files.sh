@@ -13,7 +13,7 @@ Version: ${VERSION}
 Section: games
 Priority: optional
 Architecture: ${DEB_ARCH}
-Depends: libc6, systemd, p7zip-full, avrdude
+Depends: libc6, systemd, p7zip-full, avrdude, picom
 Maintainer: ArcaderProject <noreply@github.com>
 Description: Arcader Gaming System
  Arcader gaming system with UI and daemon service.

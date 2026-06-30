@@ -2,7 +2,7 @@ use std::io::{BufRead, BufReader, ErrorKind};
 use std::time::{Duration, Instant};
 
 use crate::coin::serial;
-use crate::coin::{broadcast_coin_inserted, broadcast_coin_status, credits};
+use crate::coin::{broadcast_coin_status, credits, register_coin};
 
 const HEARTBEAT_TIMEOUT: Duration = Duration::from_secs(8);
 
@@ -54,11 +54,7 @@ pub fn run(port_name: &str) {
 
 fn handle_line(line: &str) {
     match line {
-        "COIN" => {
-            let total = credits::add(1);
-            println!("[coin] Coin inserted; credits now {}", total);
-            broadcast_coin_inserted(total);
-        }
+        "COIN" => register_coin(),
         "HB" => {
             if !credits::is_hardware_connected() {
                 credits::set_hardware_connected(true);

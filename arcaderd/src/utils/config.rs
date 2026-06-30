@@ -11,6 +11,8 @@ fn config_default(key: &str) -> Option<Option<&'static str>> {
         )),
         "coinScreen.konamiCodeEnabled" => Some(Some("false")),
         "coinScreen.coinSlotEnabled" => Some(Some("true")),
+        "coinScreen.timeModeEnabled" => Some(Some("true")),
+        "coinScreen.minutesPerCoin" => Some(Some("10")),
         "steamGridDbApiKey" => Some(None),
         _ => None,
     }

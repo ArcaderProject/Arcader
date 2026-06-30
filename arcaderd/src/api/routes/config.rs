@@ -8,11 +8,13 @@ use serde_json::{json, Map, Value};
 use crate::api::helpers::{error_response, ok_json, parse_body};
 use crate::utils::config::{get_config, set_config};
 
-const UI_CONFIG_KEYS: [&str; 5] = [
+const UI_CONFIG_KEYS: [&str; 7] = [
     "coinScreen.insertMessage",
     "coinScreen.infoMessage",
     "coinScreen.konamiCodeEnabled",
     "coinScreen.coinSlotEnabled",
+    "coinScreen.timeModeEnabled",
+    "coinScreen.minutesPerCoin",
     "steamGridDbApiKey",
 ];
 

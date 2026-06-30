@@ -3,6 +3,7 @@ pub mod detect;
 pub mod flasher;
 pub mod reader;
 pub mod serial;
+pub mod timebank;
 
 use std::time::Duration;
 
@@ -10,12 +11,36 @@ use serde_json::{json, Value};
 
 use crate::daemon::socket::broadcast_to_all;
 use crate::utils::config::get_config;
+use crate::utils::emulation::{get_current_game, stop};
 
 const RESCAN_INTERVAL: Duration = Duration::from_secs(5);
+const WARNING_THRESHOLD_SECONDS: i64 = 60;
+
+pub fn coin_slot_enabled() -> bool {
+    get_config("coinScreen.coinSlotEnabled", None).as_deref() == Some("true")
+}
+
+pub fn time_mode_enabled() -> bool {
+    get_config("coinScreen.timeModeEnabled", None).as_deref() == Some("true")
+}
+
+pub fn seconds_per_coin() -> i64 {
+    get_config("coinScreen.minutesPerCoin", None)
+        .and_then(|m| m.trim().parse::<i64>().ok())
+        .filter(|m| *m > 0)
+        .unwrap_or(10)
+        * 60
+}
+
+pub fn time_mode_active() -> bool {
+    coin_slot_enabled() && time_mode_enabled() && !credits::is_free_play()
+}
 
 pub fn coin_status_value() -> Value {
     json!({
         "credits": credits::get(),
+        "remainingSeconds": timebank::get(),
+        "timeMode": coin_slot_enabled() && time_mode_enabled(),
         "hardwareConnected": credits::is_hardware_connected(),
         "freePlay": credits::is_free_play(),
     })
@@ -25,18 +50,62 @@ pub fn broadcast_coin_status() {
     broadcast_to_all(&json!({ "type": "COIN_STATUS", "data": coin_status_value() }));
 }
 
-pub fn broadcast_coin_inserted(credits_total: u32) {
+pub fn broadcast_coin_inserted() {
+    broadcast_to_all(&json!({ "type": "COIN_INSERTED", "data": coin_status_value() }));
+}
+
+pub fn register_coin() {
+    if coin_slot_enabled() && time_mode_enabled() {
+        let total = timebank::add_seconds(seconds_per_coin());
+        println!("[coin] Coin inserted; {}s of play time available", total);
+    } else {
+        let total = credits::add(1);
+        println!("[coin] Coin inserted; credits now {}", total);
+    }
+    broadcast_coin_inserted();
+}
+
+fn broadcast_timer(message_type: &str) {
     broadcast_to_all(&json!({
-        "type": "COIN_INSERTED",
+        "type": message_type,
+        "data": { "remainingSeconds": timebank::get() },
+    }));
+}
+
+fn broadcast_timer_tick(remaining: i64) {
+    broadcast_to_all(&json!({
+        "type": "TIMER_TICK",
         "data": {
-            "credits": credits_total,
-            "hardwareConnected": credits::is_hardware_connected(),
+            "remainingSeconds": remaining,
+            "warning": remaining <= WARNING_THRESHOLD_SECONDS,
         },
     }));
 }
 
-pub fn coin_slot_enabled() -> bool {
-    get_config("coinScreen.coinSlotEnabled", None).as_deref() == Some("true")
+pub fn notify_game_started() {
+    if time_mode_active() {
+        broadcast_timer("TIMER_START");
+    }
+}
+
+pub fn notify_game_stopped() {
+    broadcast_timer("TIMER_STOP");
+}
+
+pub async fn run_timer() {
+    let mut interval = tokio::time::interval(Duration::from_secs(1));
+
+    loop {
+        interval.tick().await;
+
+        if get_current_game().is_some() && time_mode_active() {
+            let remaining = timebank::tick(1);
+            broadcast_timer_tick(remaining);
+            if remaining <= 0 {
+                stop();
+            }
+        }
+    }
 }
 
 pub fn selftest() {

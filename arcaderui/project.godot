@@ -27,6 +27,7 @@ Communicator="*res://communicator.gd"
 HealthChecker="*res://health_checker.gd"
 ScreenManager="*res://screen_manager.gd"
 CoverCache="*res://cover_cache.gd"
+TimerOverlay="*res://timer_overlay.gd"
 
 [display]
 
@@ -35,6 +36,8 @@ window/size/viewport_height=1080
 window/size/mode=3
 window/stretch/mode="canvas_items"
 window/size/fullscreen=true
+window/subwindows/embed_subwindows=false
+window/per_pixel_transparency/allowed=true
 
 [gui]
 

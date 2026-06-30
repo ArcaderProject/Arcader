@@ -134,10 +134,7 @@ func _on_coin_status(status: Dictionary) -> void:
 		info_label.text = String(status["infoMessage"])
 	konami_enabled = bool(status.get("konamiCodeEnabled", false))
 
-	if not bool(status.get("coinSlotEnabled", true)) or bool(status.get("freePlay", false)):
-		_proceed()
-		return
-	if int(status.get("credits", 0)) > 0:
+	if not bool(status.get("coinSlotEnabled", true)) or bool(status.get("freePlay", false)) or _has_play(status):
 		_proceed()
 		return
 
@@ -145,10 +142,20 @@ func _on_coin_status(status: Dictionary) -> void:
 	hardware_label.text = "" if bool(status.get("hardwareConnected", false)) else "Coin acceptor not detected"
 
 func _on_coin_inserted(status: Dictionary) -> void:
-	var credits := int(status.get("credits", 0))
-	credits_label.text = "CREDITS: %d" % credits
-	if credits > 0:
+	credits_label.text = _play_text(status)
+	if _has_play(status):
 		_proceed()
+
+func _has_play(status: Dictionary) -> bool:
+	if bool(status.get("timeMode", false)):
+		return int(status.get("remainingSeconds", 0)) > 0
+	return int(status.get("credits", 0)) > 0
+
+func _play_text(status: Dictionary) -> String:
+	if bool(status.get("timeMode", false)):
+		var s := int(status.get("remainingSeconds", 0))
+		return "TIME: %02d:%02d" % [s / 60, s % 60]
+	return "CREDITS: %d" % int(status.get("credits", 0))
 
 func _proceed() -> void:
 	if proceeding:

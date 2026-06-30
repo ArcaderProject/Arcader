@@ -8,6 +8,9 @@ signal screen_updated(screen: String)
 signal cover_received(game_id: String, cover_data: String)
 signal coin_status(status: Dictionary)
 signal coin_inserted(status: Dictionary)
+signal timer_started(remaining_seconds: int)
+signal timer_tick(remaining_seconds: int, warning: bool)
+signal timer_stopped()
 
 var pending_requests := {}
 var next_request_id := 0
@@ -93,6 +96,19 @@ func handle_message(msg: Dictionary) -> void:
 
 	if msg["type"] == "COIN_STATUS":
 		emit_signal("coin_status", msg.get("data", {}))
+		return
+
+	if msg["type"] == "TIMER_START":
+		emit_signal("timer_started", int(msg.get("data", {}).get("remainingSeconds", 0)))
+		return
+
+	if msg["type"] == "TIMER_TICK":
+		var tdata = msg.get("data", {})
+		emit_signal("timer_tick", int(tdata.get("remainingSeconds", 0)), bool(tdata.get("warning", false)))
+		return
+
+	if msg["type"] == "TIMER_STOP":
+		emit_signal("timer_stopped")
 		return
 
 	if msg.has("requestId"):

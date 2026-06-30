@@ -55,5 +55,7 @@ async fn main() {
 
     coin::start();
 
+    tokio::spawn(coin::run_timer());
+
     start_server().await;
 }

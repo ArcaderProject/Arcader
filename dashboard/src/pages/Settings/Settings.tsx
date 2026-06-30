@@ -23,6 +23,8 @@ export const Settings = () => {
         infoMessage: "",
         konamiCodeEnabled: false,
         coinSlotEnabled: true,
+        timeModeEnabled: true,
+        minutesPerCoin: "10",
         steamGridDbApiKey: "",
         password: "",
     });
@@ -36,7 +38,19 @@ export const Settings = () => {
         hardwareConnected: boolean;
         freePlay: boolean;
         coinSlotEnabled: boolean;
+        timeMode: boolean;
+        remainingSeconds: number;
     }
+
+    const formatPlay = (s: CoinStatus): string => {
+        if (s.timeMode) {
+            const secs = s.remainingSeconds || 0;
+            const mm = String(Math.floor(secs / 60)).padStart(2, "0");
+            const ss = String(secs % 60).padStart(2, "0");
+            return `${mm}:${ss}`;
+        }
+        return `${s.credits} CREDITS`;
+    };
     const [coinStatus, setCoinStatus] = useState<CoinStatus | null>(null);
 
     useEffect(() => {
@@ -65,6 +79,8 @@ export const Settings = () => {
                 konamiCodeEnabled:
                     config["coinScreen.konamiCodeEnabled"] || false,
                 coinSlotEnabled: config["coinScreen.coinSlotEnabled"] ?? true,
+                timeModeEnabled: config["coinScreen.timeModeEnabled"] ?? true,
+                minutesPerCoin: String(config["coinScreen.minutesPerCoin"] ?? "10"),
                 steamGridDbApiKey: config["steamGridDbApiKey"] || "",
                 password: "",
             });
@@ -95,6 +111,10 @@ export const Settings = () => {
                 "coinScreen.infoMessage": formData.infoMessage,
                 "coinScreen.konamiCodeEnabled": formData.konamiCodeEnabled,
                 "coinScreen.coinSlotEnabled": formData.coinSlotEnabled,
+                "coinScreen.timeModeEnabled": formData.timeModeEnabled,
+                "coinScreen.minutesPerCoin": String(
+                    parseInt(formData.minutesPerCoin, 10) || 10,
+                ),
                 steamGridDbApiKey: formData.steamGridDbApiKey || null,
             });
 
@@ -200,7 +220,7 @@ export const Settings = () => {
                                             </span>
                                             <span className="px-3 py-1 text-xs font-head font-bold uppercase border-2 border-border rounded">
                                                 {coinStatus
-                                                    ? `${coinStatus.credits} CREDITS`
+                                                    ? formatPlay(coinStatus)
                                                     : "—"}
                                             </span>
                                             {coinStatus?.freePlay && (
@@ -271,6 +291,51 @@ export const Settings = () => {
                                                 })
                                             }
                                         />
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-4 border-2 border-border rounded bg-muted/10">
+                                        <div>
+                                            <label className="block text-sm font-head font-bold uppercase tracking-wider">
+                                                Time Mode
+                                            </label>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Coins buy play time (countdown)
+                                                instead of one play per coin
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={formData.timeModeEnabled}
+                                            onCheckedChange={(checked) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    timeModeEnabled: checked,
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-head font-bold mb-2 uppercase tracking-wider">
+                                            Minutes Per Coin
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={formData.minutesPerCoin}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    minutesPerCoin:
+                                                        e.target.value,
+                                                })
+                                            }
+                                            disabled={!formData.timeModeEnabled}
+                                            className="font-head text-lg"
+                                        />
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Play time added per coin when Time
+                                            Mode is on
+                                        </p>
                                     </div>
 
                                     <div className="flex items-center justify-between p-4 border-2 border-border rounded bg-muted/10">
