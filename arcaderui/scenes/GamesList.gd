@@ -8,9 +8,9 @@ const ARROW_LEFT := preload("res://assets/sprites/arrow_left.png")
 const ARROW_RIGHT := preload("res://assets/sprites/arrow_right.png")
 
 const PANO_CENTER := Vector2(960, 580)
-const PANO_CENTER_H := 600.0
-const PANO_SIDE_H := 410.0
-const PANO_SIDE_DX := 470.0
+const PANO_CARD_H := 600.0
+const PANO_SPACING := 470.0
+const PANO_EASE := 13.0
 const GRID_COLUMNS := 4
 const GRID_CARD_H := 300.0
 const GRID_PAD := 44
@@ -32,9 +32,14 @@ var loading_label: Label
 var error_label: Label
 
 var pano_cards: Array = []
+var pano_scroll: float = 0.0
+var pano_target: float = 0.0
 
 var grid_scroll: ScrollContainer
 var grid_cards: Array = []
+
+var _repeat := NavRepeat.new()
+var _placeholder: Texture2D = UIFactory.make_placeholder()
 
 func _ready() -> void:
 	Communicator.games_received.connect(_on_games_received)
@@ -165,7 +170,10 @@ func _on_cover_ready(game_id: String, texture: Texture2D) -> void:
 			if _game_id(games[i]) == game_id and i < grid_cards.size():
 				_set_card_cover(grid_cards[i], texture)
 	else:
-		_refresh_panorama()
+		for card in pano_cards:
+			var gi := int(card.get_meta("gi", -1))
+			if gi >= 0 and gi < games.size() and _game_id(games[gi]) == game_id:
+				_set_card_cover(card, texture)
 
 func _game_id(game: Dictionary) -> String:
 	return str(game.get("id", ""))
@@ -186,39 +194,43 @@ func _build_panorama() -> void:
 	arrow_left_btn.visible = true
 	arrow_right_btn.visible = true
 
-	for i in range(3):
-		var card := UIFactory.make_cover_card(PANO_SIDE_H)
+	pano_scroll = float(selected_index)
+	pano_target = float(selected_index)
+	for i in range(5):
+		var card := UIFactory.make_cover_card(PANO_CARD_H)
+		UIFactory.set_card_selected(card, true, UIFactory.RED_GLOW)
+		card.get_node("Glow").visible = false
+		card.set_meta("gi", -999)
 		view_host.add_child(card)
 		pano_cards.append(card)
-	_refresh_panorama()
+	_layout_carousel()
 
-func _refresh_panorama() -> void:
-	if pano_cards.size() != 3 or games.is_empty():
+func _layout_carousel() -> void:
+	if pano_cards.size() != 5 or games.is_empty():
 		return
 	var n := games.size()
-	var indices := [
-		(selected_index - 1 + n) % n,
-		selected_index,
-		(selected_index + 1) % n,
-	]
-	var heights := [PANO_SIDE_H, PANO_CENTER_H, PANO_SIDE_H]
-	var centers := [
-		PANO_CENTER + Vector2(-PANO_SIDE_DX, 0),
-		PANO_CENTER,
-		PANO_CENTER + Vector2(PANO_SIDE_DX, 0),
-	]
-	for slot in range(3):
-		var card: Control = pano_cards[slot]
-		var game: Dictionary = games[indices[slot]]
-		UIFactory.set_card_size(card, heights[slot])
-		card.position = (centers[slot] - card.size * 0.5).round()
-		card.z_index = 10 if slot == 1 else 1
-		card.modulate = Color.WHITE if slot == 1 else Color(0.78, 0.78, 0.82)
-		var tex: Texture2D = CoverCache.get_texture(_game_id(game))
-		_set_card_cover(card, tex if tex else UIFactory.make_placeholder())
-		UIFactory.set_card_selected(card, slot == 1, UIFactory.RED_GLOW)
-
-	name_label.text = _game_name(games[selected_index])
+	var base := int(round(pano_scroll))
+	var base_size := Vector2(PANO_CARD_H * 2.0 / 3.0, PANO_CARD_H)
+	for k in range(5):
+		var p := base - 2 + k
+		var gi := ((p % n) + n) % n
+		var card: Control = pano_cards[k]
+		if int(card.get_meta("gi")) != gi:
+			card.set_meta("gi", gi)
+			var tex: Texture2D = CoverCache.get_texture(_game_id(games[gi]))
+			_set_card_cover(card, tex if tex else _placeholder)
+		var d := float(p) - pano_scroll
+		var ad := absf(d)
+		var sc := clampf(1.0 - 0.34 * ad, 0.30, 1.0)
+		var alpha := clampf(1.0 - (ad - 1.3) * 1.4, 0.0, 1.0)
+		var bright := lerpf(1.0, 0.78, clampf(ad, 0.0, 1.0))
+		var cx := PANO_CENTER.x + d * PANO_SPACING
+		card.scale = Vector2(sc, sc)
+		card.position = (Vector2(cx, PANO_CENTER.y) - base_size * 0.5).round()
+		card.modulate = Color(bright, bright, bright, alpha)
+		card.z_index = int(round(200.0 - ad * 20.0))
+		(card.get_node("Glow") as Panel).visible = ad < 0.5
+	name_label.text = _game_name(games[((base % n) + n) % n])
 
 func _build_grid() -> void:
 	_clear_view()
@@ -310,72 +322,91 @@ func _set_card_cover(card: Control, texture: Texture2D) -> void:
 	if cover and texture:
 		cover.texture = texture
 
+func _process(delta: float) -> void:
+	if games.is_empty():
+		return
+	var action := _repeat.poll(delta)
+	if action != "":
+		_move(action)
+	if view == "panorama" and pano_cards.size() == 5 and absf(pano_target - pano_scroll) > 0.0005:
+		pano_scroll = lerpf(pano_scroll, pano_target, 1.0 - exp(-delta * PANO_EASE))
+		if absf(pano_target - pano_scroll) <= 0.0005:
+			pano_scroll = pano_target
+		_layout_carousel()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if games.is_empty():
 		return
 	if event.is_action_pressed("ui_cancel"):
 		ScreenManager.change_to_main_menu()
 		return
-	if focus_zone == "header":
-		_input_header(event)
-	elif view == "panorama":
-		_input_panorama(event)
-	else:
-		_input_grid(event)
-
-func _input_header(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_left"):
-		header_index = maxi(0, header_index - 1)
-		_update_focus()
-	elif event.is_action_pressed("ui_right"):
-		header_index = mini(2, header_index + 1)
-		_update_focus()
-	elif event.is_action_pressed("ui_down"):
-		focus_zone = "content"
-		_update_focus()
-	elif event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select"):
-		_activate_header()
-
-func _input_panorama(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_left"):
-		selected_index = (selected_index - 1 + games.size()) % games.size()
-		_refresh_panorama()
-		_pulse(pano_cards[1])
-	elif event.is_action_pressed("ui_right"):
-		selected_index = (selected_index + 1) % games.size()
-		_refresh_panorama()
-		_pulse(pano_cards[1])
-	elif event.is_action_pressed("ui_up"):
-		focus_zone = "header"
-		header_index = 1
-		_update_focus()
-	elif event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select"):
-		_start_selected()
-
-func _input_grid(event: InputEvent) -> void:
-	var col := selected_index % GRID_COLUMNS
-	if event.is_action_pressed("ui_left"):
-		if col > 0:
-			selected_index -= 1
-			_update_grid_selection()
-	elif event.is_action_pressed("ui_right"):
-		if col < GRID_COLUMNS - 1 and selected_index < games.size() - 1:
-			selected_index += 1
-			_update_grid_selection()
-	elif event.is_action_pressed("ui_down"):
-		if selected_index + GRID_COLUMNS < games.size():
-			selected_index += GRID_COLUMNS
-			_update_grid_selection()
-	elif event.is_action_pressed("ui_up"):
-		if selected_index - GRID_COLUMNS >= 0:
-			selected_index -= GRID_COLUMNS
-			_update_grid_selection()
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select"):
+		if focus_zone == "header":
+			_activate_header()
 		else:
+			_start_selected()
+		return
+	for action in NavRepeat.ACTIONS:
+		if event.is_action_pressed(action):
+			_move(action)
+			return
+
+func _move(action: String) -> void:
+	if focus_zone == "header":
+		_move_header(action)
+	elif view == "panorama":
+		_move_panorama(action)
+	else:
+		_move_grid(action)
+
+func _move_header(action: String) -> void:
+	match action:
+		"ui_left":
+			header_index = maxi(0, header_index - 1)
+			_update_focus()
+		"ui_right":
+			header_index = mini(2, header_index + 1)
+			_update_focus()
+		"ui_down":
+			focus_zone = "content"
+			_update_focus()
+
+func _move_panorama(action: String) -> void:
+	match action:
+		"ui_left":
+			selected_index = (selected_index - 1 + games.size()) % games.size()
+			pano_target -= 1.0
+		"ui_right":
+			selected_index = (selected_index + 1) % games.size()
+			pano_target += 1.0
+		"ui_up":
 			focus_zone = "header"
 			header_index = 1
 			_update_focus()
-	elif event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select"):
-		_start_selected()
+
+func _move_grid(action: String) -> void:
+	var col := selected_index % GRID_COLUMNS
+	match action:
+		"ui_left":
+			if col > 0:
+				selected_index -= 1
+				_update_grid_selection()
+		"ui_right":
+			if col < GRID_COLUMNS - 1 and selected_index < games.size() - 1:
+				selected_index += 1
+				_update_grid_selection()
+		"ui_down":
+			if selected_index + GRID_COLUMNS < games.size():
+				selected_index += GRID_COLUMNS
+				_update_grid_selection()
+		"ui_up":
+			if selected_index - GRID_COLUMNS >= 0:
+				selected_index -= GRID_COLUMNS
+				_update_grid_selection()
+			else:
+				focus_zone = "header"
+				header_index = 1
+				_update_focus()
 
 func _activate_header() -> void:
 	match header_index:
@@ -403,18 +434,11 @@ func _start_selected() -> void:
 		if game_id != "":
 			Communicator.start_game(game_id)
 
-func _pulse(card: Control) -> void:
-	if not is_instance_valid(card):
-		return
-	var t := create_tween()
-	t.tween_property(card, "scale", Vector2(1.05, 1.05), 0.08)
-	t.tween_property(card, "scale", Vector2.ONE, 0.10)
-
 func _update_focus() -> void:
 	UIFactory.set_icon_selected(back_btn, focus_zone == "header" and header_index == 0)
 	UIFactory.set_icon_selected(search_btn, focus_zone == "header" and header_index == 1)
 	UIFactory.set_icon_selected(toggle_btn, focus_zone == "header" and header_index == 2)
 	if view == "panorama":
-		_refresh_panorama()
+		_layout_carousel()
 	else:
 		_update_grid_selection()

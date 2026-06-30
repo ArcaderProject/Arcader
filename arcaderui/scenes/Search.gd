@@ -29,6 +29,8 @@ var grid_container: GridContainer
 var grid_cards: Array = []
 var caret_on: bool = true
 
+var _repeat := NavRepeat.new()
+
 func _ready() -> void:
 	Communicator.games_received.connect(_on_games_received)
 	Communicator.game_start_error.connect(func(e): _flash_error("Error: " + e))
@@ -287,90 +289,107 @@ func _scroll_to_grid_sel() -> void:
 func _flash_error(text: String) -> void:
 	search_label.text = text
 
+func _process(delta: float) -> void:
+	var action := _repeat.poll(delta)
+	if action != "":
+		_move(action)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		ScreenManager.change_to_games_list()
 		return
-	if zone == "keyboard":
-		_input_keyboard(event)
-	else:
-		_input_grid(event)
-
-func _input_keyboard(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select"):
-		_press_key()
+		_accept()
 		return
-	if key_sel < 0:
-		_input_special_row(event)
-		return
+	for action in NavRepeat.ACTIONS:
+		if event.is_action_pressed(action):
+			_move(action)
+			return
 
+func _accept() -> void:
+	if zone == "keyboard":
+		_press_key()
+	elif not filtered.is_empty():
+		var game_id := str(filtered[grid_sel].get("id", ""))
+		if game_id != "":
+			Communicator.start_game(game_id)
+
+func _move(action: String) -> void:
+	if zone == "keyboard":
+		_move_keyboard(action)
+	else:
+		_move_grid(action)
+
+func _move_keyboard(action: String) -> void:
+	if key_sel < 0:
+		_move_special(action)
+		return
 	var col := key_sel % KB_COLS
 	var row := int(key_sel / KB_COLS)
-	if event.is_action_pressed("ui_left"):
-		if col > 0:
-			key_sel -= 1
+	match action:
+		"ui_left":
+			if col > 0:
+				key_sel -= 1
+				_update_keyboard_visuals()
+		"ui_right":
+			if col < KB_COLS - 1:
+				key_sel += 1
+				_update_keyboard_visuals()
+			elif not filtered.is_empty():
+				zone = "grid"
+				_refresh_zones()
+		"ui_up":
+			if row == 0:
+				key_sel = -2 if col < 3 else -1
+			else:
+				key_sel -= KB_COLS
 			_update_keyboard_visuals()
-	elif event.is_action_pressed("ui_right"):
-		if col < KB_COLS - 1:
-			key_sel += 1
-			_update_keyboard_visuals()
-		elif not filtered.is_empty():
-			zone = "grid"
-			_refresh_zones()
-	elif event.is_action_pressed("ui_up"):
-		if row == 0:
-			key_sel = -2 if col < 3 else -1
-		else:
-			key_sel -= KB_COLS
-		_update_keyboard_visuals()
-	elif event.is_action_pressed("ui_down"):
-		if key_sel + KB_COLS < LETTERS.length():
-			key_sel += KB_COLS
-			_update_keyboard_visuals()
+		"ui_down":
+			if key_sel + KB_COLS < LETTERS.length():
+				key_sel += KB_COLS
+				_update_keyboard_visuals()
 
-func _input_special_row(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_left"):
-		key_sel = -2
-		_update_keyboard_visuals()
-	elif event.is_action_pressed("ui_right"):
-		key_sel = -1
-		_update_keyboard_visuals()
-	elif event.is_action_pressed("ui_down"):
-		key_sel = 0 if key_sel == -2 else 3
-		_update_keyboard_visuals()
-	elif event.is_action_pressed("ui_up"):
-		ScreenManager.change_to_games_list()
+func _move_special(action: String) -> void:
+	match action:
+		"ui_left":
+			key_sel = -2
+			_update_keyboard_visuals()
+		"ui_right":
+			key_sel = -1
+			_update_keyboard_visuals()
+		"ui_down":
+			key_sel = 0 if key_sel == -2 else 3
+			_update_keyboard_visuals()
+		"ui_up":
+			ScreenManager.change_to_games_list()
 
-func _input_grid(event: InputEvent) -> void:
+func _move_grid(action: String) -> void:
 	if filtered.is_empty():
 		zone = "keyboard"
 		_refresh_zones()
 		return
 	var col := grid_sel % GRID_COLUMNS
-	if event.is_action_pressed("ui_left"):
-		if col > 0:
-			grid_sel -= 1
-			_update_grid_visuals()
-		else:
-			zone = "keyboard"
-			key_sel = 5
-			_refresh_zones()
-	elif event.is_action_pressed("ui_right"):
-		if col < GRID_COLUMNS - 1 and grid_sel < filtered.size() - 1:
-			grid_sel += 1
-			_update_grid_visuals()
-	elif event.is_action_pressed("ui_down"):
-		if grid_sel + GRID_COLUMNS < filtered.size():
-			grid_sel += GRID_COLUMNS
-			_update_grid_visuals()
-	elif event.is_action_pressed("ui_up"):
-		if grid_sel - GRID_COLUMNS >= 0:
-			grid_sel -= GRID_COLUMNS
-			_update_grid_visuals()
-	elif event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_select"):
-		var game_id := str(filtered[grid_sel].get("id", ""))
-		if game_id != "":
-			Communicator.start_game(game_id)
+	match action:
+		"ui_left":
+			if col > 0:
+				grid_sel -= 1
+				_update_grid_visuals()
+			else:
+				zone = "keyboard"
+				key_sel = 5
+				_refresh_zones()
+		"ui_right":
+			if col < GRID_COLUMNS - 1 and grid_sel < filtered.size() - 1:
+				grid_sel += 1
+				_update_grid_visuals()
+		"ui_down":
+			if grid_sel + GRID_COLUMNS < filtered.size():
+				grid_sel += GRID_COLUMNS
+				_update_grid_visuals()
+		"ui_up":
+			if grid_sel - GRID_COLUMNS >= 0:
+				grid_sel -= GRID_COLUMNS
+				_update_grid_visuals()
 
 func _refresh_zones() -> void:
 	_update_keyboard_visuals()
