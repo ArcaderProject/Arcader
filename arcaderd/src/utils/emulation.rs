@@ -294,6 +294,8 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
 
     config_overrides.insert("video_fullscreen".to_string(), "true".to_string());
     config_overrides.insert("video_windowed_fullscreen".to_string(), "true".to_string());
+    config_overrides.insert("network_cmd_enable".to_string(), "true".to_string());
+    config_overrides.insert("network_cmd_port".to_string(), "55355".to_string());
 
     if let Some(active_save_folder) = get_active_save_folder() {
         let mut save_path = get_save_folder_path(&active_save_folder.uuid);
@@ -427,6 +429,7 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         }
         stop();
         crate::coin::notify_game_stopped();
+        crate::overlay::on_game_stopped();
         broadcast_screen(post_game_screen());
     });
 

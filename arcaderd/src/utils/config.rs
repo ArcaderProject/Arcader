@@ -13,6 +13,7 @@ fn config_default(key: &str) -> Option<Option<&'static str>> {
         "coinScreen.coinSlotEnabled" => Some(Some("true")),
         "coinScreen.timeModeEnabled" => Some(Some("true")),
         "coinScreen.minutesPerCoin" => Some(Some("10")),
+        "overlayMenu.chord" => Some(Some("start+select")),
         "steamGridDbApiKey" => Some(None),
         _ => None,
     }

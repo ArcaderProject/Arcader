@@ -102,7 +102,9 @@ if [ "$NESTED" = 1 ]; then
     done
     openbox >/dev/null 2>&1 & OPENBOX_PID=$!
     picom >/dev/null 2>&1 & PICOM_PID=$!
-    echo "Nested session up (Openbox + picom inside Xephyr)."
+    export LIBGL_ALWAYS_SOFTWARE=1
+    export GALLIUM_DRIVER=llvmpipe
+    echo "Nested session up (Openbox + picom inside Xephyr, software GL)."
 fi
 
 mkdir -p "$DEV_XDG"

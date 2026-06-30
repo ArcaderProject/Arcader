@@ -2,6 +2,7 @@ mod api;
 mod coin;
 mod daemon;
 mod migrations;
+mod overlay;
 mod tasks;
 mod utils;
 
@@ -54,6 +55,7 @@ async fn main() {
     });
 
     coin::start();
+    overlay::start();
 
     tokio::spawn(coin::run_timer());
 

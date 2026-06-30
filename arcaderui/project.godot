@@ -28,16 +28,17 @@ HealthChecker="*res://health_checker.gd"
 ScreenManager="*res://screen_manager.gd"
 CoverCache="*res://cover_cache.gd"
 TimerOverlay="*res://timer_overlay.gd"
+GameMenu="*res://game_menu.gd"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/mode=3
-window/stretch/mode="canvas_items"
-window/size/fullscreen=true
 window/subwindows/embed_subwindows=false
+window/stretch/mode="canvas_items"
 window/per_pixel_transparency/allowed=true
+window/size/fullscreen=true
 
 [gui]
 

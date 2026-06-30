@@ -2,6 +2,7 @@ pub mod coin;
 pub mod cover;
 pub mod games;
 pub mod hello;
+pub mod overlay;
 pub mod start_game;
 
 use serde_json::Value;
@@ -37,6 +38,14 @@ pub async fn dispatch(
         }
         coin::SET_FREE_PLAY_MESSAGE_TYPE => {
             coin::handle_set_free_play(handle, request_id, data);
+            true
+        }
+        overlay::RESUME_GAME_MESSAGE_TYPE => {
+            overlay::handle_resume_game();
+            true
+        }
+        overlay::EXIT_GAME_MESSAGE_TYPE => {
+            overlay::handle_exit_game();
             true
         }
         _ => false,

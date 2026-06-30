@@ -11,6 +11,9 @@ signal coin_inserted(status: Dictionary)
 signal timer_started(remaining_seconds: int)
 signal timer_tick(remaining_seconds: int, warning: bool)
 signal timer_stopped()
+signal overlay_open(data: Dictionary)
+signal overlay_nav(action: String)
+signal overlay_close()
 
 var pending_requests := {}
 var next_request_id := 0
@@ -74,6 +77,12 @@ func set_free_play(enabled: bool) -> void:
 		}
 	})
 
+func resume_game() -> void:
+	send_message({"type": "RESUME_GAME", "data": {}})
+
+func exit_game() -> void:
+	send_message({"type": "EXIT_GAME", "data": {}})
+
 func _generate_request_id() -> String:
 	next_request_id += 1
 	return "req_" + str(next_request_id)
@@ -109,6 +118,18 @@ func handle_message(msg: Dictionary) -> void:
 
 	if msg["type"] == "TIMER_STOP":
 		emit_signal("timer_stopped")
+		return
+
+	if msg["type"] == "OVERLAY_OPEN":
+		emit_signal("overlay_open", msg.get("data", {}))
+		return
+
+	if msg["type"] == "OVERLAY_NAV":
+		emit_signal("overlay_nav", String(msg.get("data", {}).get("action", "")))
+		return
+
+	if msg["type"] == "OVERLAY_CLOSE":
+		emit_signal("overlay_close")
 		return
 
 	if msg.has("requestId"):
