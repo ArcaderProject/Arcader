@@ -1,0 +1,17 @@
+[package]
+name = "unixsocket"
+version = "0.1.0"
+edition = "2021"
+description = "StreamPeerUnix GDExtension for Arcader"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+godot = { version = "0.5", features = ["api-4-6", "experimental-threads"] }
+libc = "0.2"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

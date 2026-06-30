@@ -40,6 +40,15 @@ pnpm install
 pnpm run build
 cd ..
 
+echo "Building unix-socket GDExtension for $GD_LIB_ARCH ..."
+EXT_TRIPLE="${EXT_RUST_TARGET%%.*}"
+cd extensions/unixsocket
+rustup target add "$EXT_TRIPLE" 2>/dev/null || true
+cargo zigbuild --release --target "$EXT_RUST_TARGET"
+cp "target/$EXT_TRIPLE/release/libunixsocket.so" \
+   "../../arcaderui/addons/unix-socket/libunixsocket.linux.release.${GD_LIB_ARCH}.so"
+cd ../..
+
 cd arcaderui
 mkdir -p ../build/arcaderui
 godot --headless --export-release "$GODOT_PRESET" ../build/arcaderui/arcaderui
