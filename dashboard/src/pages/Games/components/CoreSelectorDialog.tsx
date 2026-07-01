@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog } from "@/components/retroui/Dialog";
 import { Button } from "@/components/retroui/Button";
+import { Input } from "@/components/retroui/Input";
 import { RadioGroup } from "@/components/retroui/Radio";
 import { Text } from "@/components/retroui/Text";
 import { toast } from "sonner";
@@ -36,14 +37,26 @@ export const CoreSelectorDialog = ({
 }: CoreSelectorDialogProps) => {
     const [cores, setCores] = useState<Core[]>([]);
     const [selectedCore, setSelectedCore] = useState<string>("");
+    const [search, setSearch] = useState<string>("");
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (open && game) {
             loadCores();
             setSelectedCore(game.core);
+            setSearch("");
         }
     }, [open, game]);
+
+    const filteredCores = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        if (!query) return cores;
+        return cores.filter((core) =>
+            [core.display_name, core.corename, core.systemname, core.core]
+                .filter(Boolean)
+                .some((field) => field.toLowerCase().includes(query))
+        );
+    }, [cores, search]);
 
     const loadCores = async () => {
         if (!game) return;
@@ -84,13 +97,23 @@ export const CoreSelectorDialog = ({
                     <Text as="h3">Select Emulator Core</Text>
                 </Dialog.Header>
 
+                <div className="px-2 pt-4">
+                    <Input
+                        type="search"
+                        placeholder="Search cores..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        autoFocus
+                    />
+                </div>
+
                 <div className="py-6 px-2 max-h-[60vh] overflow-y-auto">
                     <RadioGroup
                         value={selectedCore}
                         onValueChange={setSelectedCore}
                         className="gap-3"
                     >
-                        {cores.map((core) => (
+                        {filteredCores.map((core) => (
                             <div
                                 key={core.core}
                                 className="flex items-start gap-3 p-4 border-2 border-border hover:bg-primary/10 cursor-pointer"
@@ -121,6 +144,12 @@ export const CoreSelectorDialog = ({
                     {cores.length === 0 && (
                         <Text className="text-center py-8 opacity-70">
                             No cores available for this game type
+                        </Text>
+                    )}
+
+                    {cores.length > 0 && filteredCores.length === 0 && (
+                        <Text className="text-center py-8 opacity-70">
+                            No cores match "{search}"
                         </Text>
                     )}
                 </div>
