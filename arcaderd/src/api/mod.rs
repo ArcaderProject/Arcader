@@ -107,6 +107,7 @@ fn build_app() -> Router {
     let api_router = Router::new()
         .route("/login", post(login))
         .nest("/health", routes::health::router())
+        .nest("/terminal", routes::terminal::router())
         .merge(protected);
 
     Router::new()

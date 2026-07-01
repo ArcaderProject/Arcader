@@ -8,6 +8,7 @@ import { Games } from "@/pages/Games/Games";
 import { Lists } from "@/pages/Lists/Lists";
 import { Settings } from "@/pages/Settings/Settings";
 import { Storage } from "@/pages/Storage/Storage";
+import { Debug } from "@/pages/Debug/Debug";
 
 const App = () => {
     const router = createBrowserRouter([
@@ -20,6 +21,7 @@ const App = () => {
                 { path: "/lists", element: <Lists /> },
                 { path: "/storage", element: <Storage /> },
                 { path: "/settings", element: <Settings /> },
+                { path: "/debug", element: <Debug /> },
             ],
         },
     ]);

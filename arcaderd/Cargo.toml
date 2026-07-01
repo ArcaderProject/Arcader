@@ -9,7 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-axum = { version = "0.7", features = ["multipart"] }
+axum = { version = "0.7", features = ["multipart", "ws"] }
 tower = "0.5"
 rusqlite = { version = "0.32", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
@@ -28,6 +28,7 @@ mime_guess = "2"
 bytes = "1"
 serialport = { version = "4", default-features = false }
 evdev = "0.12"
+portable-pty = "0.8"
 
 [profile.release]
 opt-level = "z"

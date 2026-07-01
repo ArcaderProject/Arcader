@@ -12,7 +12,10 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            "/api": "http://localhost:5328",
+            "/api": {
+                target: "http://localhost:5328",
+                ws: true,
+            },
         },
     },
     build: {
