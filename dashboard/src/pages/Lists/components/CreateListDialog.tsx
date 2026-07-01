@@ -16,7 +16,7 @@ export const CreateListDialog = ({
     onConfirm,
 }: CreateListDialogProps) => {
     const [name, setName] = useState("");
-    const [type, setType] = useState<"include" | "exclude">("exclude");
+    const [type, setType] = useState<"include" | "exclude">("include");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +32,7 @@ export const CreateListDialog = ({
         try {
             await onConfirm(name.trim(), type);
             setName("");
-            setType("exclude");
+            setType("include");
             onOpenChange(false);
         } catch (err: any) {
             setError(err?.error || "Failed to create list");
@@ -44,7 +44,7 @@ export const CreateListDialog = ({
     const handleOpenChange = (open: boolean) => {
         if (!submitting) {
             setName("");
-            setType("exclude");
+            setType("include");
             setError(null);
             onOpenChange(open);
         }
@@ -86,21 +86,21 @@ export const CreateListDialog = ({
                             className="space-y-2"
                         >
                             <div className="flex items-center gap-2">
-                                <RadioGroup.Item value="exclude" id="exclude" />
-                                <label
-                                    htmlFor="exclude"
-                                    className="font-head cursor-pointer"
-                                >
-                                    EXCLUDE
-                                </label>
-                            </div>
-                            <div className="flex items-center gap-2">
                                 <RadioGroup.Item value="include" id="include" />
                                 <label
                                     htmlFor="include"
                                     className="font-head cursor-pointer"
                                 >
                                     INCLUDE
+                                </label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <RadioGroup.Item value="exclude" id="exclude" />
+                                <label
+                                    htmlFor="exclude"
+                                    className="font-head cursor-pointer"
+                                >
+                                    EXCLUDE
                                 </label>
                             </div>
                         </RadioGroup>
