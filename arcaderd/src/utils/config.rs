@@ -1,4 +1,3 @@
-use rand::RngCore;
 use serde_json::Value;
 
 use crate::utils::database::{execute, query_one_json};
@@ -19,28 +18,14 @@ fn config_default(key: &str) -> Option<Option<&'static str>> {
     }
 }
 
-fn generate_random_password() -> String {
-    let chars: Vec<char> =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-            .chars()
-            .collect();
-    let length = 16;
-    let mut random_bytes = vec![0u8; length];
-    rand::thread_rng().fill_bytes(&mut random_bytes);
-
-    let mut password = String::new();
-    for i in 0..length {
-        password.push(chars[(random_bytes[i] as usize) % chars.len()]);
-    }
-
-    password
-}
+const DEFAULT_ADMIN_PASSWORD: &str = "arcader";
 
 pub fn initialize_admin_password() -> String {
     if !has_config("admin.password") {
-        let password = generate_random_password();
+        let password = std::env::var("ARCADER_ADMIN_PASSWORD")
+            .unwrap_or_else(|_| DEFAULT_ADMIN_PASSWORD.to_string());
         set_config("admin.password", &password);
-        println!("Generated admin password: {}", password);
+        println!("Admin password initialized");
         return password;
     }
     get_config("admin.password", None).unwrap_or_default()
