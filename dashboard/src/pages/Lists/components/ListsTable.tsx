@@ -9,6 +9,7 @@ import {
     CheckCircle2,
     Star,
     List,
+    MoreVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ListManageGames } from "./ListManageGames";
@@ -124,6 +125,33 @@ export const ListsTable = ({
                                                         ACTIVATE
                                                     </Button>
                                                 )}
+
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8 flex-shrink-0"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const rect =
+                                                            e.currentTarget.getBoundingClientRect();
+                                                        const contextMenuEvent = new MouseEvent(
+                                                            "contextmenu",
+                                                            {
+                                                                bubbles: true,
+                                                                cancelable: true,
+                                                                view: window,
+                                                                clientX: rect.left,
+                                                                clientY: rect.bottom,
+                                                            }
+                                                        );
+                                                        e.currentTarget.dispatchEvent(
+                                                            contextMenuEvent
+                                                        );
+                                                    }}
+                                                >
+                                                    <MoreVertical className="w-4 h-4" />
+                                                </Button>
 
                                                 {!isDefault && (
                                                     <div className="flex-shrink-0">

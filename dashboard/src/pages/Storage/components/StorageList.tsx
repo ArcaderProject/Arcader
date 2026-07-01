@@ -11,6 +11,7 @@ import {
     Save,
     ChevronDown,
     ChevronRight,
+    MoreVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GameSavesList } from "./GameSavesList";
@@ -137,6 +138,33 @@ export const StorageList = ({
                                                     </Button>
                                                 )}
                                                 
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8 flex-shrink-0"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const rect =
+                                                            e.currentTarget.getBoundingClientRect();
+                                                        const contextMenuEvent = new MouseEvent(
+                                                            "contextmenu",
+                                                            {
+                                                                bubbles: true,
+                                                                cancelable: true,
+                                                                view: window,
+                                                                clientX: rect.left,
+                                                                clientY: rect.bottom,
+                                                            }
+                                                        );
+                                                        e.currentTarget.dispatchEvent(
+                                                            contextMenuEvent
+                                                        );
+                                                    }}
+                                                >
+                                                    <MoreVertical className="w-4 h-4" />
+                                                </Button>
+
                                                 <div className="flex-shrink-0">
                                                     {isExpanded ? (
                                                         <ChevronDown className="w-6 h-6 text-muted-foreground" />
