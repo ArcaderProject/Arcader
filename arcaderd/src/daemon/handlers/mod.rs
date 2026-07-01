@@ -4,6 +4,7 @@ pub mod games;
 pub mod hello;
 pub mod overlay;
 pub mod start_game;
+pub mod usb;
 
 use serde_json::Value;
 
@@ -46,6 +47,22 @@ pub async fn dispatch(
         }
         overlay::EXIT_GAME_MESSAGE_TYPE => {
             overlay::handle_exit_game();
+            true
+        }
+        usb::USB_STATUS_MESSAGE_TYPE => {
+            usb::handle_usb_status(handle, request_id);
+            true
+        }
+        usb::USB_SCAN_MESSAGE_TYPE => {
+            usb::handle_usb_scan(handle, request_id);
+            true
+        }
+        usb::USB_EXPORT_MESSAGE_TYPE => {
+            usb::handle_usb_export(handle, request_id, data);
+            true
+        }
+        usb::USB_IMPORT_MESSAGE_TYPE => {
+            usb::handle_usb_import(handle, request_id, data);
             true
         }
         _ => false,

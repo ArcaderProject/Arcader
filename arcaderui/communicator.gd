@@ -14,6 +14,13 @@ signal timer_stopped()
 signal overlay_open(data: Dictionary)
 signal overlay_nav(action: String)
 signal overlay_close()
+signal usb_inserted(info: Dictionary)
+signal usb_removed()
+signal usb_progress(data: Dictionary)
+signal usb_status(data: Dictionary)
+signal usb_scan(data: Dictionary)
+signal usb_export_done(msg: Dictionary)
+signal usb_import_done(msg: Dictionary)
 
 var pending_requests := {}
 var next_request_id := 0
@@ -77,6 +84,26 @@ func set_free_play(enabled: bool) -> void:
 		}
 	})
 
+func usb_get_status() -> void:
+	var request_id = _generate_request_id()
+	pending_requests[request_id] = "USB_STATUS"
+	send_message({"type": "USB_STATUS", "requestId": request_id, "data": {}})
+
+func usb_scan_stick() -> void:
+	var request_id = _generate_request_id()
+	pending_requests[request_id] = "USB_SCAN"
+	send_message({"type": "USB_SCAN", "requestId": request_id, "data": {}})
+
+func usb_export(categories: Array) -> void:
+	var request_id = _generate_request_id()
+	pending_requests[request_id] = "USB_EXPORT"
+	send_message({"type": "USB_EXPORT", "requestId": request_id, "data": {"categories": categories}})
+
+func usb_import(categories: Array) -> void:
+	var request_id = _generate_request_id()
+	pending_requests[request_id] = "USB_IMPORT"
+	send_message({"type": "USB_IMPORT", "requestId": request_id, "data": {"categories": categories}})
+
 func resume_game() -> void:
 	send_message({"type": "RESUME_GAME", "data": {}})
 
@@ -132,6 +159,18 @@ func handle_message(msg: Dictionary) -> void:
 		emit_signal("overlay_close")
 		return
 
+	if msg["type"] == "USB_INSERTED":
+		emit_signal("usb_inserted", msg.get("data", {}))
+		return
+
+	if msg["type"] == "USB_REMOVED":
+		emit_signal("usb_removed")
+		return
+
+	if msg["type"] == "USB_PROGRESS":
+		emit_signal("usb_progress", msg.get("data", {}))
+		return
+
 	if msg.has("requestId"):
 		var request_id = msg["requestId"]
 
@@ -151,6 +190,18 @@ func handle_message(msg: Dictionary) -> void:
 			"GET_COIN_STATUS_RESPONSE", "SET_FREE_PLAY_RESPONSE":
 				if msg.get("success", false):
 					emit_signal("coin_status", msg.get("data", {}))
+				pending_requests.erase(request_id)
+			"USB_STATUS_RESPONSE":
+				emit_signal("usb_status", msg.get("data", {}))
+				pending_requests.erase(request_id)
+			"USB_SCAN_RESPONSE":
+				emit_signal("usb_scan", msg.get("data", {}))
+				pending_requests.erase(request_id)
+			"USB_EXPORT_RESPONSE":
+				emit_signal("usb_export_done", msg)
+				pending_requests.erase(request_id)
+			"USB_IMPORT_RESPONSE":
+				emit_signal("usb_import_done", msg)
 				pending_requests.erase(request_id)
 
 func _handle_games_response(msg: Dictionary) -> void:

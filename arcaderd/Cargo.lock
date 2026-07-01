@@ -43,6 +43,7 @@ dependencies = [
  "serde_json",
  "serialport",
  "sevenz-rust",
+ "sha2",
  "tokio",
  "tower",
  "uuid",

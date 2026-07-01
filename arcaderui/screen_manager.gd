@@ -5,6 +5,7 @@ const SCENE_MAIN_MENU = "res://scenes/MainMenu.tscn"
 const SCENE_GAMES_LIST = "res://scenes/GamesList.tscn"
 const SCENE_SEARCH = "res://scenes/Search.tscn"
 const SCENE_COIN = "res://scenes/CoinScreen.tscn"
+const SCENE_USB_TRANSFER = "res://scenes/UsbTransfer.tscn"
 
 func _ready() -> void:
 	if Communicator.has_signal("screen_updated"):

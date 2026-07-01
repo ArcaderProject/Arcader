@@ -4,6 +4,7 @@ mod daemon;
 mod migrations;
 mod overlay;
 mod tasks;
+mod usb;
 mod utils;
 
 use crate::api::start_server;
@@ -56,6 +57,7 @@ async fn main() {
 
     coin::start();
     overlay::start();
+    usb::start();
 
     tokio::spawn(coin::run_timer());
 

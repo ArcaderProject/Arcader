@@ -29,6 +29,7 @@ ScreenManager="*res://screen_manager.gd"
 CoverCache="*res://cover_cache.gd"
 TimerOverlay="*res://timer_overlay.gd"
 GameMenu="*res://game_menu.gd"
+UsbManager="*res://usb_manager.gd"
 
 [display]
 

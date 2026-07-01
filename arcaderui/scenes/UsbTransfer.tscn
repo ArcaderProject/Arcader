@@ -1,0 +1,303 @@
+[gd_scene load_steps=10 format=3 uid="uid://b8usbtransfer01"]
+
+[ext_resource type="Script" path="res://scenes/UsbTransfer.gd" id="1_usbtransfer"]
+[ext_resource type="Texture2D" uid="uid://0bsn38e2ayg7" path="res://assets/sprites/background.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://otgvq38r1ita" path="res://assets/banner.png" id="3_banner"]
+
+[sub_resource type="Theme" id="Theme_root"]
+Label/colors/font_shadow_color = Color(0, 0, 0, 0.85)
+Label/constants/shadow_offset_x = 2
+Label/constants/shadow_offset_y = 2
+
+[sub_resource type="StyleBoxFlat" id="Panel_base"]
+bg_color = Color(0.03, 0.03, 0.05, 0.72)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.12, 0.12, 0.9)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="Cursor_style"]
+bg_color = Color(1, 0.1647, 0.1647, 0.22)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.1647, 0.1647, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="Track_style"]
+bg_color = Color(0.05, 0.05, 0.07, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.14, 0.14, 0.9)
+corner_radius_top_left = 17
+corner_radius_top_right = 17
+corner_radius_bottom_right = 17
+corner_radius_bottom_left = 17
+
+[sub_resource type="StyleBoxFlat" id="Fill_style"]
+bg_color = Color(0.6627, 0.0824, 0.0824, 1)
+corner_radius_top_left = 13
+corner_radius_top_right = 13
+corner_radius_bottom_right = 13
+corner_radius_bottom_left = 13
+shadow_color = Color(1, 0.1647, 0.1647, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="Confirm_base"]
+bg_color = Color(0.1, 0.1, 0.12, 0.7)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.34, 0.8)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="UsbTransfer" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = SubResource("Theme_root")
+script = ExtResource("1_usbtransfer")
+
+[node name="Background" type="TextureRect" parent="."]
+z_index = -100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Banner" type="TextureRect" parent="."]
+offset_left = 580.0
+offset_top = 70.0
+offset_right = 1340.0
+offset_bottom = 260.0
+mouse_filter = 2
+texture = ExtResource("3_banner")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Title" type="Label" parent="."]
+offset_top = 250.0
+offset_right = 1920.0
+offset_bottom = 320.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6627, 0.0824, 0.0824, 1)
+theme_override_font_sizes/font_size = 52
+text = "USB TRANSFER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ModeExport" type="Label" parent="."]
+offset_left = 580.0
+offset_top = 336.0
+offset_right = 920.0
+offset_bottom = 392.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "EXPORT"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ModeCaret" type="Label" parent="."]
+offset_left = 930.0
+offset_top = 336.0
+offset_right = 990.0
+offset_bottom = 392.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.68, 1)
+theme_override_font_sizes/font_size = 40
+text = "/"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ModeImport" type="Label" parent="."]
+offset_left = 1000.0
+offset_top = 336.0
+offset_right = 1340.0
+offset_bottom = 392.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "IMPORT"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="LeftPanel" type="Panel" parent="."]
+offset_left = 200.0
+offset_top = 440.0
+offset_right = 860.0
+offset_bottom = 840.0
+theme_override_styles/panel = SubResource("Panel_base")
+
+[node name="Header" type="Label" parent="LeftPanel"]
+offset_right = 660.0
+offset_top = 26.0
+offset_bottom = 70.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6627, 0.0824, 0.0824, 1)
+theme_override_font_sizes/font_size = 30
+text = "AVAILABLE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rule" type="ColorRect" parent="LeftPanel"]
+offset_left = 34.0
+offset_top = 80.0
+offset_right = 626.0
+offset_bottom = 82.0
+mouse_filter = 2
+color = Color(0.4, 0.12, 0.12, 0.8)
+
+[node name="Cursor" type="Panel" parent="LeftPanel"]
+visible = false
+offset_left = 34.0
+offset_top = 92.0
+offset_right = 626.0
+offset_bottom = 150.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Cursor_style")
+
+[node name="EmptyNote" type="Label" parent="LeftPanel"]
+offset_right = 660.0
+offset_top = 116.0
+offset_bottom = 160.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.68, 1)
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rows" type="Control" parent="LeftPanel"]
+offset_right = 660.0
+offset_bottom = 400.0
+mouse_filter = 2
+
+[node name="RightPanel" type="Panel" parent="."]
+offset_left = 1060.0
+offset_top = 440.0
+offset_right = 1720.0
+offset_bottom = 840.0
+theme_override_styles/panel = SubResource("Panel_base")
+
+[node name="Header" type="Label" parent="RightPanel"]
+offset_right = 660.0
+offset_top = 26.0
+offset_bottom = 70.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6627, 0.0824, 0.0824, 1)
+theme_override_font_sizes/font_size = 30
+text = "TO TRANSFER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rule" type="ColorRect" parent="RightPanel"]
+offset_left = 34.0
+offset_top = 80.0
+offset_right = 626.0
+offset_bottom = 82.0
+mouse_filter = 2
+color = Color(0.4, 0.12, 0.12, 0.8)
+
+[node name="Cursor" type="Panel" parent="RightPanel"]
+visible = false
+offset_left = 34.0
+offset_top = 92.0
+offset_right = 626.0
+offset_bottom = 150.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Cursor_style")
+
+[node name="EmptyNote" type="Label" parent="RightPanel"]
+offset_right = 660.0
+offset_top = 116.0
+offset_bottom = 160.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.68, 1)
+theme_override_font_sizes/font_size = 28
+text = "nothing selected"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rows" type="Control" parent="RightPanel"]
+offset_right = 660.0
+offset_bottom = 400.0
+mouse_filter = 2
+
+[node name="Confirm" type="Panel" parent="."]
+offset_left = 740.0
+offset_top = 900.0
+offset_right = 1180.0
+offset_bottom = 984.0
+theme_override_styles/panel = SubResource("Confirm_base")
+
+[node name="Label" type="Label" parent="Confirm"]
+offset_right = 440.0
+offset_bottom = 78.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 38
+text = "CONFIRM"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Progress" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Progress"]
+offset_top = 540.0
+offset_right = 1920.0
+offset_bottom = 590.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 32
+text = "Working…"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Track" type="Panel" parent="Progress"]
+offset_left = 580.0
+offset_top = 620.0
+offset_right = 1340.0
+offset_bottom = 654.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Track_style")
+
+[node name="Fill" type="Panel" parent="Progress/Track"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 244.0
+offset_bottom = 30.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Fill_style")
+
+[node name="Result" type="Label" parent="."]
+visible = false
+offset_top = 540.0
+offset_right = 1920.0
+offset_bottom = 780.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 34
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
