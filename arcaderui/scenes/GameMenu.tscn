@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://bqctdnreak441"]
+
+[sub_resource type="StyleBoxFlat" id="Bg"]
+bg_color = Color(0, 0, 0, 0.78)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.1647, 0.1647, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[node name="GameMenu" type="Window"]
+title = "Paused"
+initial_position = 2
+size = Vector2i(560, 360)
+min_size = Vector2i(560, 360)
+borderless = true
+always_on_top = true
+transparent = true
+unfocusable = true
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Bg")
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = -40.0
+mouse_filter = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="Title" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 52
+horizontal_alignment = 1
+
+[node name="Item0" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "Resume"
+horizontal_alignment = 1
+
+[node name="Item1" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "Exit to Library"
+horizontal_alignment = 1

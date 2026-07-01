@@ -1,11 +1,8 @@
 extends Control
 
-const SEARCH_ICON := preload("res://assets/sprites/search.png")
 const GRID_ICON := preload("res://assets/sprites/grid.png")
 const CAROUSEL_ICON := preload("res://assets/sprites/carousel.png")
-const BACK_ICON := preload("res://assets/sprites/back.png")
-const ARROW_LEFT := preload("res://assets/sprites/arrow_left.png")
-const ARROW_RIGHT := preload("res://assets/sprites/arrow_right.png")
+const COVER_CARD := preload("res://scenes/CoverCard.tscn")
 
 const PANO_CENTER := Vector2(960, 580)
 const PANO_CARD_H := 600.0
@@ -21,15 +18,15 @@ var view: String = "panorama"
 var focus_zone: String = "content"
 var header_index: int = 1
 
-var back_btn: Control
-var search_btn: Control
-var toggle_btn: Control
-var arrow_left_btn: Control
-var arrow_right_btn: Control
-var view_host: Control
-var name_label: Label
-var loading_label: Label
-var error_label: Label
+@onready var back_btn: Control = $BackBtn
+@onready var search_btn: Control = $Header/SearchHolder/SearchBtn
+@onready var toggle_btn: Control = $Header/ToggleHolder/ToggleBtn
+@onready var arrow_left_btn: Control = $ArrowLeft
+@onready var arrow_right_btn: Control = $ArrowRight
+@onready var view_host: Control = $ViewHost
+@onready var name_label: Label = $NameLabel
+@onready var loading_label: Label = $LoadingLabel
+@onready var error_label: Label = $ErrorLabel
 
 var pano_cards: Array = []
 var pano_scroll: float = 0.0
@@ -48,84 +45,8 @@ func _ready() -> void:
 	Communicator.connection_restored.connect(_on_connection_restored)
 	CoverCache.cover_ready.connect(_on_cover_ready)
 
-	_build_chrome()
 	_show_loading("Loading games...")
 	Communicator.get_games()
-
-func _build_chrome() -> void:
-	add_child(UIFactory.make_background())
-
-	back_btn = UIFactory.make_icon_button(BACK_ICON, 96.0)
-	back_btn.position = Vector2(60, 50)
-	add_child(back_btn)
-
-	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 40)
-	header.alignment = BoxContainer.ALIGNMENT_CENTER
-	header.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	header.offset_top = 55
-	header.offset_left = 480
-	header.offset_right = -480
-	header.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	add_child(header)
-
-	search_btn = UIFactory.make_icon_button(SEARCH_ICON, 96.0)
-	_wrap_fixed(header, search_btn)
-
-	var pill := UIFactory.make_pill("Select Game", 44)
-	pill.custom_minimum_size = Vector2(540, 96)
-	pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	header.add_child(pill)
-
-	toggle_btn = UIFactory.make_icon_button(GRID_ICON, 96.0)
-	_wrap_fixed(header, toggle_btn)
-
-	arrow_left_btn = UIFactory.make_icon_button(ARROW_LEFT, 96.0)
-	arrow_left_btn.position = Vector2(110, PANO_CENTER.y - 48)
-	add_child(arrow_left_btn)
-	arrow_right_btn = UIFactory.make_icon_button(ARROW_RIGHT, 96.0)
-	arrow_right_btn.position = Vector2(1714, PANO_CENTER.y - 48)
-	add_child(arrow_right_btn)
-
-	view_host = Control.new()
-	view_host.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	view_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(view_host)
-
-	name_label = Label.new()
-	name_label.add_theme_font_size_override("font_size", 48)
-	name_label.add_theme_color_override("font_color", UIFactory.RED)
-	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	name_label.add_theme_constant_override("shadow_offset_x", 3)
-	name_label.add_theme_constant_override("shadow_offset_y", 3)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	name_label.offset_top = 930
-	add_child(name_label)
-
-	loading_label = _make_status_label()
-	error_label = _make_status_label()
-	error_label.add_theme_color_override("font_color", UIFactory.RED_GLOW)
-
-func _wrap_fixed(parent: Control, btn: Control) -> void:
-	var holder := Control.new()
-	holder.custom_minimum_size = Vector2(96, 96)
-	holder.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	btn.position = Vector2(0, 0)
-	holder.add_child(btn)
-	parent.add_child(holder)
-
-func _make_status_label() -> Label:
-	var l := Label.new()
-	l.add_theme_font_size_override("font_size", 36)
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	l.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	l.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	l.grow_vertical = Control.GROW_DIRECTION_BOTH
-	l.visible = false
-	add_child(l)
-	return l
 
 func _show_loading(text: String) -> void:
 	loading_label.text = text
@@ -197,7 +118,8 @@ func _build_panorama() -> void:
 	pano_scroll = float(selected_index)
 	pano_target = float(selected_index)
 	for i in range(5):
-		var card := UIFactory.make_cover_card(PANO_CARD_H)
+		var card: Control = COVER_CARD.instantiate()
+		card.set_height(PANO_CARD_H)
 		UIFactory.set_card_selected(card, true, UIFactory.RED_GLOW)
 		card.get_node("Glow").visible = false
 		card.set_meta("gi", -999)
@@ -269,7 +191,8 @@ func _build_grid() -> void:
 		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var card_holder := CenterContainer.new()
-		var card := UIFactory.make_cover_card(GRID_CARD_H)
+		var card: Control = COVER_CARD.instantiate()
+		card.set_height(GRID_CARD_H)
 		var tex: Texture2D = CoverCache.get_texture(_game_id(game))
 		if tex:
 			_set_card_cover(card, tex)

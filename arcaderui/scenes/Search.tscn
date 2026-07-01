@@ -1,6 +1,45 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8sx2qarcsrch"]
+[gd_scene load_steps=7 format=3 uid="uid://b8sx2qarcsrch"]
 
 [ext_resource type="Script" path="res://scenes/Search.gd" id="1_search"]
+[ext_resource type="Texture2D" uid="uid://0bsn38e2ayg7" path="res://assets/sprites/background.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://hpjds518xb7w" path="res://assets/sprites/key_btn.png" id="3_key"]
+[ext_resource type="Texture2D" uid="uid://cwbhym71udc4g" path="res://assets/sprites/key_space.png" id="4_space"]
+[ext_resource type="Texture2D" uid="uid://dsc4hx35reoyt" path="res://assets/sprites/key_back.png" id="5_back"]
+
+[sub_resource type="StyleBoxFlat" id="Bar"]
+bg_color = Color(0.6627, 0.0824, 0.0824, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="KeyBorder"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(1, 0.1647, 0.1647, 0.7)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="WideBorder"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(1, 0.1647, 0.1647, 0.7)
+shadow_size = 14
 
 [node name="Search" type="Control"]
 layout_mode = 3
@@ -10,3 +49,1628 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_search")
+
+[node name="Background" type="TextureRect" parent="."]
+z_index = -100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SearchBar" type="Panel" parent="."]
+offset_left = 720.0
+offset_top = 50.0
+offset_right = 1850.0
+offset_bottom = 130.0
+theme_override_styles/panel = SubResource("Bar")
+
+[node name="SearchLabel" type="Label" parent="."]
+offset_left = 745.0
+offset_top = 50.0
+offset_right = 1835.0
+offset_bottom = 130.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 40
+vertical_alignment = 1
+
+[node name="GridScroll" type="ScrollContainer" parent="."]
+offset_left = 700.0
+offset_top = 170.0
+offset_right = 1870.0
+offset_bottom = 1030.0
+horizontal_scroll_mode = 0
+
+[node name="Pad" type="MarginContainer" parent="GridScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 44
+theme_override_constants/margin_top = 44
+theme_override_constants/margin_right = 44
+theme_override_constants/margin_bottom = 44
+
+[node name="Grid" type="GridContainer" parent="GridScroll/Pad"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 40
+columns = 4
+
+[node name="Space" type="Control" parent="."]
+offset_left = 70.0
+offset_top = 170.0
+offset_right = 350.0
+offset_bottom = 247.28
+
+[node name="Border" type="Panel" parent="Space"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("WideBorder")
+
+[node name="Bg" type="TextureRect" parent="Space"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("4_space")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Back" type="Control" parent="."]
+offset_left = 364.0
+offset_top = 170.0
+offset_right = 644.0
+offset_bottom = 247.28
+
+[node name="Border" type="Panel" parent="Back"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("WideBorder")
+
+[node name="Bg" type="TextureRect" parent="Back"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("5_back")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Keys" type="Control" parent="."]
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Key0" type="Control" parent="Keys"]
+offset_left = 70.0
+offset_top = 267.28
+offset_right = 154.0
+offset_bottom = 351.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key0"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "A"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key1" type="Control" parent="Keys"]
+offset_left = 168.0
+offset_top = 267.28
+offset_right = 252.0
+offset_bottom = 351.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key1"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "B"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key2" type="Control" parent="Keys"]
+offset_left = 266.0
+offset_top = 267.28
+offset_right = 350.0
+offset_bottom = 351.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key2"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "C"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key3" type="Control" parent="Keys"]
+offset_left = 364.0
+offset_top = 267.28
+offset_right = 448.0
+offset_bottom = 351.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key3"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "D"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key4" type="Control" parent="Keys"]
+offset_left = 462.0
+offset_top = 267.28
+offset_right = 546.0
+offset_bottom = 351.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key4"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key5" type="Control" parent="Keys"]
+offset_left = 560.0
+offset_top = 267.28
+offset_right = 644.0
+offset_bottom = 351.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key5"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "F"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key6" type="Control" parent="Keys"]
+offset_left = 70.0
+offset_top = 365.28
+offset_right = 154.0
+offset_bottom = 449.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key6"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key6"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key6"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "G"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key7" type="Control" parent="Keys"]
+offset_left = 168.0
+offset_top = 365.28
+offset_right = 252.0
+offset_bottom = 449.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key7"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key7"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key7"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "H"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key8" type="Control" parent="Keys"]
+offset_left = 266.0
+offset_top = 365.28
+offset_right = 350.0
+offset_bottom = 449.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key8"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key8"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key8"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "I"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key9" type="Control" parent="Keys"]
+offset_left = 364.0
+offset_top = 365.28
+offset_right = 448.0
+offset_bottom = 449.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key9"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key9"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key9"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "J"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key10" type="Control" parent="Keys"]
+offset_left = 462.0
+offset_top = 365.28
+offset_right = 546.0
+offset_bottom = 449.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key10"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key10"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key10"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "K"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key11" type="Control" parent="Keys"]
+offset_left = 560.0
+offset_top = 365.28
+offset_right = 644.0
+offset_bottom = 449.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key11"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key11"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key11"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "L"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key12" type="Control" parent="Keys"]
+offset_left = 70.0
+offset_top = 463.28
+offset_right = 154.0
+offset_bottom = 547.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key12"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key12"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key12"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "M"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key13" type="Control" parent="Keys"]
+offset_left = 168.0
+offset_top = 463.28
+offset_right = 252.0
+offset_bottom = 547.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key13"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key13"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key13"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "N"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key14" type="Control" parent="Keys"]
+offset_left = 266.0
+offset_top = 463.28
+offset_right = 350.0
+offset_bottom = 547.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key14"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key14"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key14"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "O"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key15" type="Control" parent="Keys"]
+offset_left = 364.0
+offset_top = 463.28
+offset_right = 448.0
+offset_bottom = 547.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key15"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key15"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key15"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "P"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key16" type="Control" parent="Keys"]
+offset_left = 462.0
+offset_top = 463.28
+offset_right = 546.0
+offset_bottom = 547.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key16"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key16"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key16"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "Q"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key17" type="Control" parent="Keys"]
+offset_left = 560.0
+offset_top = 463.28
+offset_right = 644.0
+offset_bottom = 547.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key17"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key17"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key17"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "R"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key18" type="Control" parent="Keys"]
+offset_left = 70.0
+offset_top = 561.28
+offset_right = 154.0
+offset_bottom = 645.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key18"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key18"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key18"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "S"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key19" type="Control" parent="Keys"]
+offset_left = 168.0
+offset_top = 561.28
+offset_right = 252.0
+offset_bottom = 645.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key19"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key19"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key19"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "T"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key20" type="Control" parent="Keys"]
+offset_left = 266.0
+offset_top = 561.28
+offset_right = 350.0
+offset_bottom = 645.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key20"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key20"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key20"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "U"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key21" type="Control" parent="Keys"]
+offset_left = 364.0
+offset_top = 561.28
+offset_right = 448.0
+offset_bottom = 645.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key21"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key21"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key21"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "V"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key22" type="Control" parent="Keys"]
+offset_left = 462.0
+offset_top = 561.28
+offset_right = 546.0
+offset_bottom = 645.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key22"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key22"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key22"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "W"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key23" type="Control" parent="Keys"]
+offset_left = 560.0
+offset_top = 561.28
+offset_right = 644.0
+offset_bottom = 645.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key23"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key23"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key23"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key24" type="Control" parent="Keys"]
+offset_left = 70.0
+offset_top = 659.28
+offset_right = 154.0
+offset_bottom = 743.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key24"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key24"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key24"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "Y"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key25" type="Control" parent="Keys"]
+offset_left = 168.0
+offset_top = 659.28
+offset_right = 252.0
+offset_bottom = 743.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key25"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key25"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key25"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "Z"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key26" type="Control" parent="Keys"]
+offset_left = 266.0
+offset_top = 659.28
+offset_right = 350.0
+offset_bottom = 743.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key26"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key26"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key26"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key27" type="Control" parent="Keys"]
+offset_left = 364.0
+offset_top = 659.28
+offset_right = 448.0
+offset_bottom = 743.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key27"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key27"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key27"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key28" type="Control" parent="Keys"]
+offset_left = 462.0
+offset_top = 659.28
+offset_right = 546.0
+offset_bottom = 743.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key28"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key28"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key28"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key29" type="Control" parent="Keys"]
+offset_left = 560.0
+offset_top = 659.28
+offset_right = 644.0
+offset_bottom = 743.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key29"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key29"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key29"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key30" type="Control" parent="Keys"]
+offset_left = 70.0
+offset_top = 757.28
+offset_right = 154.0
+offset_bottom = 841.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key30"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key30"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key30"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key31" type="Control" parent="Keys"]
+offset_left = 168.0
+offset_top = 757.28
+offset_right = 252.0
+offset_bottom = 841.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key31"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key31"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key31"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "6"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key32" type="Control" parent="Keys"]
+offset_left = 266.0
+offset_top = 757.28
+offset_right = 350.0
+offset_bottom = 841.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key32"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key32"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key32"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "7"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key33" type="Control" parent="Keys"]
+offset_left = 364.0
+offset_top = 757.28
+offset_right = 448.0
+offset_bottom = 841.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key33"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key33"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key33"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "8"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key34" type="Control" parent="Keys"]
+offset_left = 462.0
+offset_top = 757.28
+offset_right = 546.0
+offset_bottom = 841.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key34"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key34"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key34"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "9"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Key35" type="Control" parent="Keys"]
+offset_left = 560.0
+offset_top = 757.28
+offset_right = 644.0
+offset_bottom = 841.28
+pivot_offset = Vector2(42, 42)
+mouse_filter = 2
+
+[node name="Border" type="Panel" parent="Keys/Key35"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 3.0
+offset_bottom = 3.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("KeyBorder")
+
+[node name="Bg" type="TextureRect" parent="Keys/Key35"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_key")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="Keys/Key35"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 40
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+

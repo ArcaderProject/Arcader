@@ -1,13 +1,8 @@
 extends Control
 
-const KEY_BTN_TEX := preload("res://assets/sprites/key_btn.png")
-const KEY_SPACE_TEX := preload("res://assets/sprites/key_space.png")
-const KEY_BACK_TEX := preload("res://assets/sprites/key_back.png")
-
+const COVER_CARD := preload("res://scenes/CoverCard.tscn")
 const LETTERS := "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 const KB_COLS := 6
-const KEY_SIZE := 84.0
-const KEY_GAP := 14.0
 const GRID_COLUMNS := 4
 const GRID_CARD_H := 250.0
 const GRID_PAD := 44
@@ -20,12 +15,12 @@ var zone: String = "keyboard"
 var key_sel: int = 0
 var grid_sel: int = 0
 
-var search_label: Label
+@onready var search_label: Label = $SearchLabel
+@onready var grid_scroll: ScrollContainer = $GridScroll
+@onready var grid_container: GridContainer = $GridScroll/Pad/Grid
+@onready var space_node: Control = $Space
+@onready var back_node: Control = $Back
 var key_nodes: Array = []
-var space_node: Control
-var back_node: Control
-var grid_scroll: ScrollContainer
-var grid_container: GridContainer
 var grid_cards: Array = []
 var caret_on: bool = true
 
@@ -36,7 +31,7 @@ func _ready() -> void:
 	Communicator.game_start_error.connect(func(e): _flash_error("Error: " + e))
 	CoverCache.cover_ready.connect(_on_cover_ready)
 
-	_build_chrome()
+	key_nodes = $Keys.get_children()
 
 	var caret := Timer.new()
 	caret.wait_time = 0.5
@@ -44,147 +39,9 @@ func _ready() -> void:
 	add_child(caret)
 	caret.start()
 
-	Communicator.get_games()
-
-func _build_chrome() -> void:
-	add_child(UIFactory.make_background())
-
-	_build_keyboard()
-
-	var bar := Panel.new()
-	bar.position = Vector2(720, 50)
-	bar.size = Vector2(1130, 80)
-	var bar_style := StyleBoxFlat.new()
-	bar_style.bg_color = UIFactory.RED
-	bar_style.set_corner_radius_all(6)
-	bar.add_theme_stylebox_override("panel", bar_style)
-	add_child(bar)
-
-	search_label = Label.new()
-	search_label.add_theme_font_size_override("font_size", 40)
-	search_label.add_theme_color_override("font_color", Color.BLACK)
-	search_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	search_label.position = Vector2(745, 50)
-	search_label.size = Vector2(1090, 80)
-	add_child(search_label)
-
-	grid_scroll = ScrollContainer.new()
-	grid_scroll.position = Vector2(700, 170)
-	grid_scroll.size = Vector2(1170, 860)
-	grid_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(grid_scroll)
-
-	var pad := MarginContainer.new()
-	pad.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	pad.add_theme_constant_override("margin_left", GRID_PAD)
-	pad.add_theme_constant_override("margin_right", GRID_PAD)
-	pad.add_theme_constant_override("margin_top", GRID_PAD)
-	pad.add_theme_constant_override("margin_bottom", GRID_PAD)
-	grid_scroll.add_child(pad)
-
-	grid_container = GridContainer.new()
-	grid_container.columns = GRID_COLUMNS
-	grid_container.add_theme_constant_override("h_separation", 40)
-	grid_container.add_theme_constant_override("v_separation", 40)
-	grid_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	pad.add_child(grid_container)
-
 	_update_search_label()
-
-func _build_keyboard() -> void:
-	var kb_x := 70.0
-	var kb_y := 170.0
-	var wide_w := (KB_COLS * KEY_SIZE + (KB_COLS - 1) * KEY_GAP - KEY_GAP) / 2.0
-	var wide_h := KEY_SIZE * 0.92
-
-	space_node = _make_wide_key(KEY_SPACE_TEX)
-	space_node.position = Vector2(kb_x, kb_y)
-	space_node.size = Vector2(wide_w, wide_h)
-	add_child(space_node)
-
-	back_node = _make_wide_key(KEY_BACK_TEX)
-	back_node.position = Vector2(kb_x + wide_w + KEY_GAP, kb_y)
-	back_node.size = Vector2(wide_w, wide_h)
-	add_child(back_node)
-
-	var letters_y := kb_y + wide_h + KEY_GAP + 6
-	key_nodes.clear()
-	for i in range(LETTERS.length()):
-		var col := i % KB_COLS
-		var row := int(i / KB_COLS)
-		var key := _make_letter_key(LETTERS[i])
-		key.position = Vector2(kb_x + col * (KEY_SIZE + KEY_GAP), letters_y + row * (KEY_SIZE + KEY_GAP))
-		add_child(key)
-		key_nodes.append(key)
 	_update_keyboard_visuals()
-
-func _make_letter_key(letter: String) -> Control:
-	var root := Control.new()
-	root.size = Vector2(KEY_SIZE, KEY_SIZE)
-	root.pivot_offset = Vector2(KEY_SIZE, KEY_SIZE) * 0.5
-
-	var border := Panel.new()
-	border.name = "Border"
-	border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	border.offset_left = -3
-	border.offset_top = -3
-	border.offset_right = 3
-	border.offset_bottom = 3
-	border.visible = false
-	var bstyle := StyleBoxFlat.new()
-	bstyle.bg_color = Color(0, 0, 0, 0)
-	bstyle.set_border_width_all(4)
-	bstyle.border_color = Color.BLACK
-	bstyle.set_corner_radius_all(6)
-	bstyle.shadow_color = Color(UIFactory.RED_GLOW.r, UIFactory.RED_GLOW.g, UIFactory.RED_GLOW.b, 0.7)
-	bstyle.shadow_size = 14
-	border.add_theme_stylebox_override("panel", bstyle)
-	root.add_child(border)
-
-	var bg := TextureRect.new()
-	bg.texture = KEY_BTN_TEX
-	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.add_child(bg)
-
-	var label := Label.new()
-	label.text = letter
-	label.add_theme_font_size_override("font_size", 40)
-	label.add_theme_color_override("font_color", Color.WHITE)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.add_child(label)
-	return root
-
-func _make_wide_key(tex: Texture2D) -> Control:
-	var root := Control.new()
-	root.pivot_offset = Vector2(0, 0)
-
-	var border := Panel.new()
-	border.name = "Border"
-	border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	border.offset_left = -3
-	border.offset_top = -3
-	border.offset_right = 3
-	border.offset_bottom = 3
-	border.visible = false
-	var bstyle := StyleBoxFlat.new()
-	bstyle.bg_color = Color(0, 0, 0, 0)
-	bstyle.set_border_width_all(4)
-	bstyle.border_color = Color.BLACK
-	bstyle.set_corner_radius_all(6)
-	border.add_theme_stylebox_override("panel", bstyle)
-	root.add_child(border)
-
-	var bg := TextureRect.new()
-	bg.texture = tex
-	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.add_child(bg)
-	return root
+	Communicator.get_games()
 
 func _on_games_received(received: Array) -> void:
 	games = received
@@ -211,7 +68,8 @@ func _build_grid() -> void:
 		cell.add_theme_constant_override("separation", 10)
 
 		var holder := CenterContainer.new()
-		var card := UIFactory.make_cover_card(GRID_CARD_H)
+		var card: Control = COVER_CARD.instantiate()
+		card.set_height(GRID_CARD_H)
 		var tex: Texture2D = CoverCache.get_texture(str(game.get("id", "")))
 		if tex:
 			(card.get_node("Cover") as TextureRect).texture = tex
@@ -258,7 +116,8 @@ func _set_key_selected(key: Control, selected: bool) -> void:
 	var border := key.get_node_or_null("Border") as Panel
 	if border:
 		border.visible = selected
-	key.scale = Vector2(1.12, 1.12) if selected else Vector2.ONE
+	var wide := key == space_node or key == back_node
+	key.scale = Vector2(1.12, 1.12) if selected and not wide else Vector2.ONE
 	key.modulate = Color(1.3, 1.3, 1.3) if selected else Color.WHITE
 
 func _update_grid_visuals() -> void:

@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8coin1screen0a"]
+[gd_scene load_steps=6 format=3 uid="uid://b8coin1screen0a"]
 
 [ext_resource type="Script" path="res://scenes/CoinScreen.gd" id="1_coinscreen"]
+[ext_resource type="Texture2D" uid="uid://hhcvj7bkliwh" path="res://assets/sprites/coin_background.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://otgvq38r1ita" path="res://assets/banner.png" id="3_banner"]
+[ext_resource type="Texture2D" uid="uid://d2vekag2mjbkq" path="res://assets/sprites/acceptor.png" id="4_acceptor"]
+[ext_resource type="Texture2D" uid="uid://c7dqfm3y5adgy" path="res://assets/sprites/coin.png" id="5_coin"]
 
 [node name="CoinScreen" type="Control"]
 layout_mode = 3
@@ -10,3 +14,96 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_coinscreen")
+
+[node name="Background" type="TextureRect" parent="."]
+z_index = -100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Banner" type="TextureRect" parent="."]
+offset_left = 600.0
+offset_top = 60.0
+offset_right = 1320.0
+offset_bottom = 240.0
+mouse_filter = 2
+texture = ExtResource("3_banner")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Acceptor" type="TextureRect" parent="."]
+offset_left = 810.0
+offset_top = 250.0
+offset_right = 1110.0
+offset_bottom = 610.0
+mouse_filter = 2
+texture = ExtResource("4_acceptor")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="CoinClip" type="Control" parent="."]
+clip_contents = true
+offset_left = 960.0
+offset_top = 293.2
+offset_right = 1920.0
+offset_bottom = 365.2
+mouse_filter = 2
+
+[node name="Coin" type="TextureRect" parent="CoinClip"]
+offset_left = 250.0
+offset_right = 322.0
+offset_bottom = 72.0
+mouse_filter = 2
+texture = ExtResource("5_coin")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="InsertLabel" type="Label" parent="."]
+offset_left = 260.0
+offset_top = 640.0
+offset_right = 1660.0
+offset_bottom = 760.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.1647, 0.1647, 1)
+theme_override_font_sizes/font_size = 84
+text = "INSERT COIN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InfoLabel" type="Label" parent="."]
+offset_left = 360.0
+offset_top = 770.0
+offset_right = 1560.0
+offset_bottom = 880.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 34
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="CreditsLabel" type="Label" parent="."]
+offset_left = 360.0
+offset_top = 880.0
+offset_right = 1560.0
+offset_bottom = 940.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 40
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HardwareLabel" type="Label" parent="."]
+offset_left = 360.0
+offset_top = 1030.0
+offset_right = 1560.0
+offset_bottom = 1070.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.7, 0.2, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+vertical_alignment = 1

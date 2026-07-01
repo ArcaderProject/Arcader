@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://bmq3dsoy5w441"]
+
+[ext_resource type="Script" path="res://scenes/CoverCard.gd" id="1_covercard"]
+[ext_resource type="Shader" uid="uid://bkv4ykpdc1upo" path="res://assets/rounded.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="Rounded"]
+shader = ExtResource("2_shader")
+shader_parameter/radius_px = 18.0
+shader_parameter/size_px = Vector2(200, 300)
+
+[node name="CoverCard" type="Control"]
+custom_minimum_size = Vector2(200, 300)
+offset_right = 200.0
+offset_bottom = 300.0
+pivot_offset = Vector2(100, 150)
+mouse_filter = 2
+script = ExtResource("1_covercard")
+
+[node name="Glow" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = 6.0
+mouse_filter = 2
+
+[node name="Cover" type="TextureRect" parent="."]
+material = SubResource("Rounded")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6

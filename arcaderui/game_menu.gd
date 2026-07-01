@@ -64,50 +64,10 @@ func _ensure_window() -> void:
 	if window:
 		return
 
-	window = Window.new()
-	window.borderless = true
-	window.always_on_top = true
-	window.transparent = true
-	window.unfocusable = true
-	window.size = Vector2i(560, 360)
-	window.min_size = window.size
+	window = preload("res://scenes/GameMenu.tscn").instantiate()
+	title_label = window.get_node("Panel/VBox/Title")
+	item_labels = [window.get_node("Panel/VBox/Item0"), window.get_node("Panel/VBox/Item1")]
 	get_tree().root.add_child(window)
-
-	var bg := Panel.new()
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0.78)
-	style.set_corner_radius_all(20)
-	style.set_border_width_all(3)
-	style.border_color = UIFactory.RED_GLOW
-	bg.add_theme_stylebox_override("panel", style)
-	window.add_child(bg)
-
-	var vbox := VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	vbox.offset_left = 40
-	vbox.offset_right = -40
-	vbox.offset_top = 40
-	vbox.offset_bottom = -40
-	vbox.add_theme_constant_override("separation", 28)
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	bg.add_child(vbox)
-
-	title_label = Label.new()
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 52)
-	title_label.add_theme_color_override("font_color", Color.WHITE)
-	vbox.add_child(title_label)
-
-	item_labels = []
-	for item in ITEMS:
-		var label := Label.new()
-		label.text = item
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 40)
-		vbox.add_child(label)
-		item_labels.append(label)
 
 	var screen := DisplayServer.screen_get_size()
 	window.position = Vector2i((screen.x - window.size.x) / 2, (screen.y - window.size.y) / 2)

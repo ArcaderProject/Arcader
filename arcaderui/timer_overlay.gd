@@ -49,34 +49,9 @@ func _ensure_window() -> void:
 	if window:
 		return
 
-	window = Window.new()
-	window.borderless = true
-	window.always_on_top = true
-	window.transparent = true
-	window.unfocusable = true
-	window.size = Vector2i(240, 96)
-	window.min_size = window.size
+	window = preload("res://scenes/TimerOverlay.tscn").instantiate()
+	label = window.get_node("Panel/Label")
 	get_tree().root.add_child(window)
-
-	var bg := Panel.new()
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0.55)
-	style.set_corner_radius_all(16)
-	style.set_border_width_all(2)
-	style.border_color = Color(1, 0.16, 0.16, 0.9)
-	bg.add_theme_stylebox_override("panel", style)
-	window.add_child(bg)
-
-	label = Label.new()
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 48)
-	label.add_theme_color_override("font_color", Color.WHITE)
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.add_child(label)
 
 	var screen := DisplayServer.screen_get_size()
 	window.position = Vector2i((screen.x - window.size.x) / 2, 28)
