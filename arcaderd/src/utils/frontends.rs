@@ -417,7 +417,43 @@ fn display_env() -> (String, String) {
     (display, xauthority)
 }
 
+fn launch_command(cmd: &str) -> Option<tokio::process::Child> {
+    let parts: Vec<&str> = cmd.split_whitespace().collect();
+    let program = *parts.first()?;
+    let (display, xauthority) = display_env();
+    let mut command = tokio::process::Command::new(program);
+    command
+        .args(&parts[1..])
+        .env("DISPLAY", display)
+        .env("XAUTHORITY", xauthority)
+        .process_group(0)
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit());
+    if program.contains('/') {
+        if let Some(parent) = Path::new(program).parent() {
+            command.current_dir(parent);
+        }
+    }
+    match command.spawn() {
+        Ok(child) => {
+            println!("[frontend] launched custom command: {}", cmd);
+            Some(child)
+        }
+        Err(e) => {
+            eprintln!("[frontend] failed to launch custom command '{}': {}", cmd, e);
+            None
+        }
+    }
+}
+
 fn launch_active() -> Option<tokio::process::Child> {
+    if let Ok(cmd) = std::env::var("ARCADER_FRONTEND_CMD") {
+        let cmd = cmd.trim().to_string();
+        if !cmd.is_empty() {
+            return launch_command(&cmd);
+        }
+    }
+
     let id = active_id();
     let (entry, args) = entry_for(&id)?;
     let dir = frontend_dir(&id);

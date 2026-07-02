@@ -4,7 +4,7 @@ import {
     RouterProvider,
 } from "react-router-dom";
 import Root from "@/common/layouts/Root.jsx";
-import { Games } from "@/pages/Games/Games";
+import { Library } from "@/pages/Library/Library";
 import { Lists } from "@/pages/Lists/Lists";
 import { Settings } from "@/pages/Settings/Settings";
 import { Storage } from "@/pages/Storage/Storage";
@@ -16,8 +16,9 @@ const App = () => {
             path: "/",
             element: <Root />,
             children: [
-                { path: "/", element: <Navigate to="/games" /> },
-                { path: "/games", element: <Games /> },
+                { path: "/", element: <Navigate to="/library" /> },
+                { path: "/library", element: <Library /> },
+                { path: "/games", element: <Navigate to="/library" /> },
                 { path: "/lists", element: <Lists /> },
                 { path: "/storage", element: <Storage /> },
                 { path: "/settings", element: <Settings /> },

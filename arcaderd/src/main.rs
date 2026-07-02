@@ -61,10 +61,20 @@ async fn main() {
 
     tokio::spawn(coin::run_timer());
 
-    tokio::spawn(async {
-        crate::utils::frontends::bootstrap().await;
-    });
-    crate::utils::frontends::start_supervisor();
+    let frontend_disabled = std::env::var("ARCADER_NO_FRONTEND")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
+    if !frontend_disabled {
+        let custom_frontend = std::env::var("ARCADER_FRONTEND_CMD")
+            .map(|v| !v.trim().is_empty())
+            .unwrap_or(false);
+        if !custom_frontend {
+            tokio::spawn(async {
+                crate::utils::frontends::bootstrap().await;
+            });
+        }
+        crate::utils::frontends::start_supervisor();
+    }
 
     start_server().await;
 }

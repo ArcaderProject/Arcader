@@ -13,7 +13,7 @@ import { LookupCoverDialog } from "./components/LookupCoverDialog";
 import { useGames, type Game } from "./hooks/useGames";
 import { useCurrentlyPlaying } from "./hooks/useCurrentlyPlaying";
 
-export const Games = () => {
+export const Games = ({ embedded = false }: { embedded?: boolean } = {}) => {
     const {
         games,
         loading,
@@ -42,7 +42,6 @@ export const Games = () => {
     const [isDraggingCover, setIsDraggingCover] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Filter games based on search query
     const filteredGames = useMemo(() => {
         if (!searchQuery.trim()) return games;
         
@@ -122,9 +121,8 @@ export const Games = () => {
     }
 
     return (
-        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className={embedded ? "" : "p-4 md:p-6 lg:p-8 max-w-7xl mx-auto"}>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                {/* Search Bar */}
                 <div className="relative flex-1 max-w-md w-full">
                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
                     <input
@@ -136,7 +134,6 @@ export const Games = () => {
                     />
                 </div>
 
-                {/* Upload Button */}
                 <Button
                     onClick={() => setUploadDialogOpen(true)}
                     className="gap-2 shrink-0"

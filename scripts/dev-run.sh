@@ -34,8 +34,6 @@ fi
 NESTED=1
 [ "${1:-}" = "--here" ] && NESTED=0
 
-command -v godot >/dev/null || { echo "Error: godot not installed"; exit 1; }
-
 if ss -ltn 2>/dev/null | grep -q ':5328 '; then
     echo "Error: port 5328 already in use (is arcaderd already running?)."
     exit 1
@@ -70,9 +68,9 @@ print(json.dumps(orig))
 PY
 )"
 
-XEPHYR_PID=""; OPENBOX_PID=""; PICOM_PID=""; ARCADERD_PID=""; GODOT_PID=""
+XEPHYR_PID=""; OPENBOX_PID=""; PICOM_PID=""; ARCADERD_PID=""
 cleanup() {
-    for pid in "$GODOT_PID" "$ARCADERD_PID" "$PICOM_PID" "$OPENBOX_PID" "$XEPHYR_PID"; do
+    for pid in "$ARCADERD_PID" "$PICOM_PID" "$OPENBOX_PID" "$XEPHYR_PID"; do
         [ -n "$pid" ] && kill "$pid" 2>/dev/null || true
     done
     python3 - "$DB" "$ORIG" <<'PY'
@@ -111,7 +109,11 @@ mkdir -p "$DEV_XDG"
 export XDG_RUNTIME_DIR="$DEV_XDG"
 
 echo "Starting arcaderd..."
-( cd "$ROOT/arcaderd" && exec ./target/debug/arcaderd ) &
+if [ -n "${ARCADER_FRONTEND_CMD:-}" ]; then
+    ( cd "$ROOT/arcaderd" && ARCADER_FRONTEND_CMD="$ARCADER_FRONTEND_CMD" exec ./target/debug/arcaderd ) &
+else
+    ( cd "$ROOT/arcaderd" && ARCADER_NO_FRONTEND=1 exec ./target/debug/arcaderd ) &
+fi
 ARCADERD_PID=$!
 
 for _ in $(seq 1 30); do
@@ -128,13 +130,4 @@ echo "Add more time:  scripts/dev-run.sh add 120"
 echo "Ctrl+C to stop."
 echo
 
-FRONTEND_PROJECT="$ROOT/../Frontend/arcaderui"
-if command -v godot >/dev/null 2>&1 && [ -f "$FRONTEND_PROJECT/project.godot" ]; then
-    godot --path "$FRONTEND_PROJECT" &
-    GODOT_PID=$!
-    wait "$GODOT_PID"
-else
-    echo "Frontend project not found at $FRONTEND_PROJECT (or godot missing)."
-    echo "arcaderd is running; start a frontend against \$XDG_RUNTIME_DIR/arcaderd.sock."
-    wait "$ARCADERD_PID"
-fi
+wait "$ARCADERD_PID"
