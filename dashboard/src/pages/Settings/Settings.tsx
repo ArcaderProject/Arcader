@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/retroui/Input";
 import { Switch } from "@/components/retroui/Switch";
 import { Button } from "@/components/retroui/Button";
-import { Save, Key, RefreshCw, Copy, Check } from "lucide-react";
+import { Save, Key, RefreshCw, Copy, Check, Volume2 } from "lucide-react";
 import arcadeMachine from "@/common/assets/arcade-machine.png";
 import { FrontendsTab } from "./FrontendsTab";
 
@@ -26,6 +26,7 @@ export const Settings = () => {
         coinSlotEnabled: true,
         timeModeEnabled: true,
         minutesPerCoin: "10",
+        volume: "100",
         steamGridDbApiKey: "",
         password: "",
     });
@@ -82,6 +83,7 @@ export const Settings = () => {
                 coinSlotEnabled: config["coinScreen.coinSlotEnabled"] ?? true,
                 timeModeEnabled: config["coinScreen.timeModeEnabled"] ?? true,
                 minutesPerCoin: String(config["coinScreen.minutesPerCoin"] ?? "10"),
+                volume: String(config["audio.volume"] ?? "100"),
                 steamGridDbApiKey: config["steamGridDbApiKey"] || "",
                 password: "",
             });
@@ -115,6 +117,9 @@ export const Settings = () => {
                 "coinScreen.timeModeEnabled": formData.timeModeEnabled,
                 "coinScreen.minutesPerCoin": String(
                     parseInt(formData.minutesPerCoin, 10) || 10,
+                ),
+                "audio.volume": String(
+                    Math.min(100, Math.max(0, parseInt(formData.volume, 10) || 100)),
                 ),
                 steamGridDbApiKey: formData.steamGridDbApiKey || null,
             });
@@ -194,6 +199,7 @@ export const Settings = () => {
                             <TabsTrigger>PASSWORD</TabsTrigger>
                             <TabsTrigger>INTEGRATIONS</TabsTrigger>
                             <TabsTrigger>FRONTENDS</TabsTrigger>
+                            <TabsTrigger>AUDIO</TabsTrigger>
                         </TabsTriggerList>
 
                         <TabsPanels>
@@ -493,6 +499,47 @@ export const Settings = () => {
 
                             <TabsContent>
                                 <FrontendsTab />
+                            </TabsContent>
+
+                            <TabsContent>
+                                <div className="space-y-6">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <Volume2 className="w-6 h-6 text-primary" />
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-head font-bold uppercase">
+                                                    Master Volume
+                                                </h3>
+                                                <p className="text-xs text-muted-foreground">
+                                                    System output volume for games
+                                                    and the frontend
+                                                </p>
+                                            </div>
+                                            <span className="px-3 py-1 text-sm font-head font-bold border-2 border-border rounded tabular-nums">
+                                                {formData.volume}%
+                                            </span>
+                                        </div>
+
+                                        <input
+                                            type="range"
+                                            min={0}
+                                            max={100}
+                                            step={1}
+                                            value={formData.volume}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    volume: e.target.value,
+                                                })
+                                            }
+                                            className="w-full accent-primary cursor-pointer"
+                                        />
+                                        <p className="text-xs text-muted-foreground mt-2">
+                                            Applied when you save. Takes effect
+                                            immediately on the cabinet.
+                                        </p>
+                                    </div>
+                                </div>
                             </TabsContent>
                         </TabsPanels>
                     </Tabs>

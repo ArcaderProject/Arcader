@@ -35,6 +35,7 @@ async fn main() {
 
     initialize_admin_password();
     ensure_global_profile();
+    crate::utils::audio::apply_saved_volume();
 
     tokio::spawn(async {
         let result = run_retro_arch_task().await;

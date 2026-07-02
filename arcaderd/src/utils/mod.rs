@@ -1,4 +1,5 @@
 pub mod apps;
+pub mod audio;
 pub mod config;
 pub mod database;
 pub mod directory;

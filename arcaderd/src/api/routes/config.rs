@@ -11,13 +11,14 @@ use crate::daemon::handlers::start_game::broadcast_update_screen;
 use crate::utils::config::{get_config, set_config};
 use crate::utils::emulation::get_current_game;
 
-const UI_CONFIG_KEYS: [&str; 7] = [
+const UI_CONFIG_KEYS: [&str; 8] = [
     "coinScreen.insertMessage",
     "coinScreen.infoMessage",
     "coinScreen.konamiCodeEnabled",
     "coinScreen.coinSlotEnabled",
     "coinScreen.timeModeEnabled",
     "coinScreen.minutesPerCoin",
+    "audio.volume",
     "steamGridDbApiKey",
 ];
 
@@ -63,6 +64,12 @@ async fn update_config(body: Bytes) -> Response {
                 other => other.to_string(),
             };
             set_config(key, &string_value);
+
+            if key == "audio.volume" {
+                if let Ok(percent) = string_value.parse::<i64>() {
+                    crate::utils::audio::set_volume(percent);
+                }
+            }
         } else {
             return error_response(
                 StatusCode::FORBIDDEN,

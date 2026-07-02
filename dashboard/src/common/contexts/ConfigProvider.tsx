@@ -10,6 +10,7 @@ export interface Config {
     "coinScreen.coinSlotEnabled": boolean;
     "coinScreen.timeModeEnabled": boolean;
     "coinScreen.minutesPerCoin": string;
+    "audio.volume": string;
     steamGridDbApiKey: string | null;
 }
 
