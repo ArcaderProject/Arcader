@@ -61,5 +61,10 @@ async fn main() {
 
     tokio::spawn(coin::run_timer());
 
+    tokio::spawn(async {
+        crate::utils::frontends::bootstrap().await;
+    });
+    crate::utils::frontends::start_supervisor();
+
     start_server().await;
 }

@@ -46,6 +46,10 @@ pub fn broadcast_cover_updated(game_id: &str) {
     }));
 }
 
+pub fn broadcast_apps_updated() {
+    broadcast_to_all(&serde_json::json!({ "type": "APPS_UPDATED" }));
+}
+
 pub fn send_response(handle: &ClientHandle, response: &Value) {
     let json_response = response.to_string() + "\n";
     if let Err(error) = handle.send(json_response) {

@@ -184,25 +184,18 @@ xset s noblank
 unclutter -idle 0.1 -root &
 
 picom -b 2>/dev/null || true
-
-/usr/bin/arcaderui --fullscreen &
 EOF
-    
+
     chmod +x "$USER_HOME/.config/openbox/autostart"
-    
+
     cat > "$USER_HOME/.config/openbox/menu.xml" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <openbox_menu xmlns="http://openbox.org/3.4/menu">
   <menu id="root-menu" label="Openbox 3">
-    <item label="Arcader">
-      <action name="Execute">
-        <command>/usr/bin/arcaderui</command>
-      </action>
-    </item>
   </menu>
 </openbox_menu>
 EOF
-    
+
     chown -R "$INSTALL_USER:$INSTALL_USER" "$USER_HOME/.config/openbox"
     
     log_info "✓ Openbox configured"

@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-use crate::coin::{coin_slot_enabled, credits, time_mode_enabled, timebank};
+use crate::coin::{credits, try_consume_for_launch};
 use crate::daemon::socket::{broadcast_to_all, send_response, ClientHandle};
 use crate::utils::emulation::{get_current_game, start_by_filename};
 use crate::utils::games::get_all_games;
@@ -45,18 +45,7 @@ async fn start_game_inner(request_id: Value, data: Value) -> Result<Value, Strin
         return Err("A game is already running".to_string());
     }
 
-    let mut consumed_credit = false;
-    if coin_slot_enabled() && !credits::is_free_play() {
-        if time_mode_enabled() {
-            if timebank::get() <= 0 {
-                return Err("No time remaining".to_string());
-            }
-        } else if credits::try_consume() {
-            consumed_credit = true;
-        } else {
-            return Err("No credits available".to_string());
-        }
-    }
+    let consumed_credit = try_consume_for_launch()?;
 
     let filename = game
         .get("filename")

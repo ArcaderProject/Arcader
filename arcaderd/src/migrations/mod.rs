@@ -16,6 +16,11 @@ const MIGRATIONS: &[(&str, &str)] = &[
         "0004-create-save-folders",
         include_str!("sql/0004-create-save-folders.sql"),
     ),
+    ("0005-create-apps", include_str!("sql/0005-create-apps.sql")),
+    (
+        "0006-create-frontends",
+        include_str!("sql/0006-create-frontends.sql"),
+    ),
 ];
 
 fn ensure_migrations_table(conn: &Connection) -> rusqlite::Result<()> {

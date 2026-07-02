@@ -128,6 +128,13 @@ echo "Add more time:  scripts/dev-run.sh add 120"
 echo "Ctrl+C to stop."
 echo
 
-godot --path "$ROOT/arcaderui" &
-GODOT_PID=$!
-wait "$GODOT_PID"
+FRONTEND_PROJECT="$ROOT/../Frontend/arcaderui"
+if command -v godot >/dev/null 2>&1 && [ -f "$FRONTEND_PROJECT/project.godot" ]; then
+    godot --path "$FRONTEND_PROJECT" &
+    GODOT_PID=$!
+    wait "$GODOT_PID"
+else
+    echo "Frontend project not found at $FRONTEND_PROJECT (or godot missing)."
+    echo "arcaderd is running; start a frontend against \$XDG_RUNTIME_DIR/arcaderd.sock."
+    wait "$ARCADERD_PID"
+fi

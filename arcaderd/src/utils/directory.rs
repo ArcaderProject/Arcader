@@ -36,12 +36,16 @@ pub fn ensure_data_directories(working_dir: &Path) -> DataDirectories {
     let cores_dir = data_dir.join("cores");
     let roms_dir = data_dir.join("roms");
     let covers_dir = data_dir.join("covers");
+    let app_icons_dir = data_dir.join("app_icons");
+    let frontends_dir = working_dir.join("frontends");
 
     ensure_directory_exists(&data_dir);
+    ensure_directory_exists(&frontends_dir);
     ensure_directory_exists(&retroarch_dir);
     ensure_directory_exists(&cores_dir);
     ensure_directory_exists(&roms_dir);
     ensure_directory_exists(&covers_dir);
+    ensure_directory_exists(&app_icons_dir);
 
     DataDirectories {
         retroarch_dir,

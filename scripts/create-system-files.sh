@@ -27,21 +27,3 @@ ExecStartPre=/bin/sleep 5
 [Install]
 WantedBy=default.target
 EOF
-
-cat > build/debian/usr/share/applications/arcader.desktop << 'EOF'
-[Desktop Entry]
-Name=Arcader
-Comment=Arcader Gaming Interface
-Exec=/usr/share/arcader/arcaderui --fullscreen
-Icon=arcader
-Terminal=false
-Type=Application
-Categories=Game;
-EOF
-
-cat > build/debian/usr/bin/arcaderui << 'EOF'
-#!/bin/bash
-cd /usr/share/arcader
-exec ./arcaderui --fullscreen "$@"
-EOF
-chmod 755 build/debian/usr/bin/arcaderui

@@ -24,11 +24,6 @@ cat > build/debian/DEBIAN/postinst << 'EOF'
 set -e
 
 chmod 755 /usr/bin/arcaderd
-chmod 755 /usr/share/arcader/arcaderui
-
-if command -v update-desktop-database >/dev/null 2>&1; then
-    update-desktop-database /usr/share/applications
-fi
 
 get_install_user() {
     if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
@@ -98,9 +93,7 @@ set -e
 
 case "$1" in
     purge)
-        if command -v update-desktop-database >/dev/null 2>&1; then
-            update-desktop-database /usr/share/applications
-        fi
+        :
         ;;
 esac
 EOF

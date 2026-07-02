@@ -352,16 +352,6 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
 
     ensure_executable(&retroarch_path);
 
-    {
-        let current = *CURRENT_PID.lock().unwrap();
-        if let Some(pid) = current {
-            if is_running(pid) {
-                eprintln!("Emulator already running");
-                return false;
-            }
-        }
-    }
-
     println!(
         "Spawning emulator: {} -f -L {} {}",
         retroarch_path.display(),
@@ -369,23 +359,9 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         game_file
     );
 
-    let display = std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string());
-    let xauthority = std::env::var("XAUTHORITY").unwrap_or_else(|_| {
-        let home = std::env::var("HOME").unwrap_or_default();
-        format!("{}/.Xauthority", home)
-    });
-
     let mut command = tokio::process::Command::new(&retroarch_path);
-    command
-        .arg("-f")
-        .arg("-L")
-        .arg(&cores_path)
-        .arg(game_file)
-        .env("DISPLAY", display)
-        .env("XAUTHORITY", xauthority)
-        .process_group(0)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+    command.arg("-f").arg("-L").arg(&cores_path).arg(game_file);
+    apply_display_env(&mut command);
 
     if is_wayland() {
         command.env(
@@ -397,10 +373,38 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         );
     }
 
+    spawn_tracked(command, game_info)
+}
+
+fn apply_display_env(command: &mut tokio::process::Command) {
+    let display = std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string());
+    let xauthority = std::env::var("XAUTHORITY").unwrap_or_else(|_| {
+        let home = std::env::var("HOME").unwrap_or_default();
+        format!("{}/.Xauthority", home)
+    });
+    command.env("DISPLAY", display).env("XAUTHORITY", xauthority);
+}
+
+fn spawn_tracked(mut command: tokio::process::Command, content_info: Option<Value>) -> bool {
+    {
+        let current = *CURRENT_PID.lock().unwrap();
+        if let Some(pid) = current {
+            if is_running(pid) {
+                eprintln!("Content already running");
+                return false;
+            }
+        }
+    }
+
+    command
+        .process_group(0)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+
     let mut child = match command.spawn() {
         Ok(c) => c,
         Err(e) => {
-            eprintln!("Failed to spawn emulator: {}", e);
+            eprintln!("Failed to spawn process: {}", e);
             return false;
         }
     };
@@ -428,8 +432,8 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         let status = child.wait().await;
         let code = status.ok().and_then(|s| s.code());
         match code {
-            Some(c) => println!("Emulator exited with code {}", c),
-            None => println!("Emulator exited with code null"),
+            Some(c) => println!("Tracked process exited with code {}", c),
+            None => println!("Tracked process exited with code null"),
         }
         stop();
         crate::coin::notify_game_stopped();
@@ -438,12 +442,98 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
     });
 
     *CURRENT_PID.lock().unwrap() = pid;
-    *CURRENT_GAME.lock().unwrap() = game_info;
+    *CURRENT_GAME.lock().unwrap() = content_info;
 
     crate::coin::notify_game_started();
     broadcast_screen("LOADING");
 
     true
+}
+
+fn find_browser() -> Option<PathBuf> {
+    let candidates = [
+        "google-chrome-stable",
+        "google-chrome",
+        "chromium",
+        "chromium-browser",
+    ];
+    let path_var = std::env::var("PATH").unwrap_or_else(|_| "/usr/bin:/bin".to_string());
+    for name in candidates {
+        for dir in path_var.split(':').filter(|d| !d.is_empty()) {
+            let candidate = Path::new(dir).join(name);
+            if candidate.exists() {
+                return Some(candidate);
+            }
+        }
+    }
+    None
+}
+
+fn chrome_kiosk_args(url: &str, user_agent: Option<&str>) -> Vec<String> {
+    let mut args = vec![
+        "--kiosk".to_string(),
+        "--enable-extensions".to_string(),
+        "--noerrdialogs".to_string(),
+        "--disable-translate".to_string(),
+        "--ozone-platform=wayland".to_string(),
+        "--enable-features=UseOzonePlatform".to_string(),
+        "--start-fullscreen".to_string(),
+        "--no-first-run".to_string(),
+        "--no-default-browser-check".to_string(),
+        "--disable-session-crashed-bubble".to_string(),
+        "--password-store=basic".to_string(),
+    ];
+    if let Some(ua) = user_agent.filter(|s| !s.is_empty()) {
+        args.push(format!("--user-agent={}", ua));
+    }
+    args.push(url.to_string());
+    args
+}
+
+pub fn launch_app(app: &Value) -> Result<(), String> {
+    let app_type = app.get("type").and_then(|v| v.as_str()).unwrap_or("");
+
+    let mut command = match app_type {
+        "web" => {
+            let url = app
+                .get("url")
+                .and_then(|v| v.as_str())
+                .filter(|s| !s.is_empty())
+                .ok_or_else(|| "Web app has no url".to_string())?;
+            let browser = find_browser().ok_or_else(|| {
+                "No browser found (install google-chrome or chromium)".to_string()
+            })?;
+            let user_agent = app.get("userAgent").and_then(|v| v.as_str());
+            let mut command = tokio::process::Command::new(browser);
+            command.args(chrome_kiosk_args(url, user_agent));
+            command
+        }
+        "native" => {
+            let exec = app
+                .get("exec")
+                .and_then(|v| v.as_str())
+                .filter(|s| !s.is_empty())
+                .ok_or_else(|| "Native app has no exec".to_string())?;
+            let mut command = tokio::process::Command::new(exec);
+            if let Some(args) = app.get("args").and_then(|v| v.as_array()) {
+                for arg in args {
+                    if let Some(s) = arg.as_str() {
+                        command.arg(s);
+                    }
+                }
+            }
+            command
+        }
+        other => return Err(format!("Unknown app type: {}", other)),
+    };
+
+    apply_display_env(&mut command);
+
+    if spawn_tracked(command, Some(app.clone())) {
+        Ok(())
+    } else {
+        Err("Failed to launch app".to_string())
+    }
 }
 
 fn broadcast_screen(screen: &str) {

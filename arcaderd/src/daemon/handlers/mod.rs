@@ -1,3 +1,4 @@
+pub mod apps;
 pub mod coin;
 pub mod cover;
 pub mod games;
@@ -23,6 +24,18 @@ pub async fn dispatch(
         }
         games::GET_GAMES_MESSAGE_TYPE => {
             games::handle_get_games(handle, request_id);
+            true
+        }
+        apps::GET_APPS_MESSAGE_TYPE => {
+            apps::handle_get_apps(handle, request_id);
+            true
+        }
+        apps::GET_APP_ICON_MESSAGE_TYPE => {
+            apps::handle_get_app_icon(handle, request_id, data);
+            true
+        }
+        apps::LAUNCH_APP_MESSAGE_TYPE => {
+            apps::handle_launch_app(handle, request_id, data);
             true
         }
         start_game::START_GAME_MESSAGE_TYPE => {

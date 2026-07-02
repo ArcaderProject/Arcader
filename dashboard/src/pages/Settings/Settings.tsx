@@ -13,6 +13,7 @@ import { Switch } from "@/components/retroui/Switch";
 import { Button } from "@/components/retroui/Button";
 import { Save, Key, RefreshCw, Copy, Check } from "lucide-react";
 import arcadeMachine from "@/common/assets/arcade-machine.png";
+import { FrontendsTab } from "./FrontendsTab";
 
 export const Settings = () => {
     const { config, loading, updateConfig, updatePassword } =
@@ -192,6 +193,7 @@ export const Settings = () => {
                             <TabsTrigger>COIN SCREEN</TabsTrigger>
                             <TabsTrigger>PASSWORD</TabsTrigger>
                             <TabsTrigger>INTEGRATIONS</TabsTrigger>
+                            <TabsTrigger>FRONTENDS</TabsTrigger>
                         </TabsTriggerList>
 
                         <TabsPanels>
@@ -487,6 +489,10 @@ export const Settings = () => {
                                         </a>
                                     </div>
                                 </div>
+                            </TabsContent>
+
+                            <TabsContent>
+                                <FrontendsTab />
                             </TabsContent>
                         </TabsPanels>
                     </Tabs>

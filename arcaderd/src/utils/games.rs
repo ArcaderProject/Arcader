@@ -2,22 +2,14 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use rand::RngCore;
 use serde_json::{Map, Value};
 
 use crate::utils::config::{get_selected_list_id, has_config};
 use crate::utils::database::{execute, query_json, query_one_json};
 use crate::utils::emulation::find_core_by_extension;
+use crate::utils::ids::random_hex_id;
 use crate::utils::loader::download_game_cover;
 use crate::utils::paths::cwd;
-
-fn to_hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{:02x}", b));
-    }
-    s
-}
 
 pub fn enrich_game_with_console(game: Option<Map<String, Value>>) -> Option<Map<String, Value>> {
     let mut game = game?;
@@ -54,12 +46,6 @@ pub fn enrich_game_with_console(game: Option<Map<String, Value>>) -> Option<Map<
     Some(game)
 }
 
-fn generate_game_id() -> String {
-    let mut bytes = [0u8; 16];
-    rand::thread_rng().fill_bytes(&mut bytes);
-    to_hex(&bytes)
-}
-
 fn rom_path(filename: &str) -> PathBuf {
     cwd().join("data").join("roms").join(filename)
 }
@@ -81,7 +67,7 @@ pub fn add_game(
     let core = find_core_by_extension(&extension, None)
         .ok_or_else(|| format!("Unsupported file extension: {}", extension))?;
 
-    let game_id = generate_game_id();
+    let game_id = random_hex_id();
     let filename = format!("{}.{}", game_id, extension);
 
     fs::write(rom_path(&filename), file_buffer).map_err(|e| e.to_string())?;

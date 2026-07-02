@@ -18,6 +18,13 @@ use crate::utils::paths::cwd;
 
 const SERVER_PORT: u16 = 5328;
 
+fn server_port() -> u16 {
+    std::env::var("ARCADER_SERVER_PORT")
+        .ok()
+        .and_then(|p| p.parse::<u16>().ok())
+        .unwrap_or(SERVER_PORT)
+}
+
 fn dashboard_path() -> PathBuf {
     match std::env::var("ARCADER_DASHBOARD_PATH") {
         Ok(p) if !p.is_empty() => PathBuf::from(p),
@@ -98,6 +105,8 @@ async fn spa_fallback(uri: Uri) -> Response {
 fn build_app() -> Router {
     let protected = Router::new()
         .nest("/games", routes::games::router())
+        .nest("/apps", routes::apps::router())
+        .nest("/frontends", routes::frontends::router())
         .nest("/lists", routes::game_lists::router())
         .nest("/config", routes::config::router())
         .nest("/coin", routes::coin::router())
@@ -120,12 +129,13 @@ fn build_app() -> Router {
 pub async fn start_server() {
     let app = build_app();
 
-    let addr = format!("0.0.0.0:{}", SERVER_PORT);
+    let port = server_port();
+    let addr = format!("0.0.0.0:{}", port);
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .expect("Failed to bind server port");
 
-    println!("Server started on port {}", SERVER_PORT);
+    println!("Server started on port {}", port);
 
     axum::serve(listener, app).await.expect("Server error");
 }

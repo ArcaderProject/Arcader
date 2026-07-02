@@ -64,6 +64,22 @@ pub fn coin_status_full() -> Value {
     data
 }
 
+pub fn try_consume_for_launch() -> Result<bool, String> {
+    if !coin_slot_enabled() || credits::is_free_play() {
+        return Ok(false);
+    }
+    if time_mode_enabled() {
+        if timebank::get() <= 0 {
+            return Err("No time remaining".to_string());
+        }
+        Ok(false)
+    } else if credits::try_consume() {
+        Ok(true)
+    } else {
+        Err("No credits available".to_string())
+    }
+}
+
 pub fn broadcast_coin_status() {
     broadcast_to_all(&json!({ "type": "COIN_STATUS", "data": coin_status_full() }));
 }

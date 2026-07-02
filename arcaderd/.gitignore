@@ -6,3 +6,6 @@
 
 # Runtime data directory (database, roms, covers, saves, retroarch)
 /data
+
+# Runtime frontends directory
+/frontends

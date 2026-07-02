@@ -14,6 +14,8 @@ fn config_default(key: &str) -> Option<Option<&'static str>> {
         "coinScreen.minutesPerCoin" => Some(Some("10")),
         "overlayMenu.chord" => Some(Some("start+select")),
         "steamGridDbApiKey" => Some(None),
+        "frontend.defaultRepo" => Some(Some("https://github.com/ArcaderProject/Frontend")),
+        "frontend.active" => Some(Some("main")),
         _ => None,
     }
 }
