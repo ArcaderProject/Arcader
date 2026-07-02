@@ -13,6 +13,7 @@ use crate::daemon::socket::broadcast_to_all;
 
 const POLL_INTERVAL: Duration = Duration::from_millis(1500);
 const MOUNT_HELPER: &str = "/usr/local/sbin/arcader-usb";
+const HELPER_MOUNTPOINT: &str = "/run/arcader-usb";
 
 #[derive(Clone, Debug, PartialEq)]
 enum MountMethod {
@@ -187,14 +188,44 @@ fn is_system_mount(mp: &Path) -> bool {
     s == "/" || s == "/boot" || s == "/boot/efi" || s.starts_with("/run/live")
 }
 
+fn is_read_only(mp: &Path) -> bool {
+    let target = mp.to_string_lossy();
+    let Ok(contents) = std::fs::read_to_string("/proc/mounts") else {
+        return false;
+    };
+    for line in contents.lines() {
+        let mut fields = line.split_whitespace();
+        let _device = fields.next();
+        let point = fields.next();
+        let _fstype = fields.next();
+        let options = fields.next().unwrap_or("");
+        if point == Some(target.as_ref()) {
+            return options.split(',').any(|opt| opt == "ro");
+        }
+    }
+    false
+}
+
 fn mount(candidate: &Candidate) -> Result<UsbState, String> {
     if let Some(mp) = &candidate.mountpoint {
-        return Ok(UsbState {
-            device: candidate.device.clone(),
-            mountpoint: mp.clone(),
-            label: candidate.label.clone(),
-            method: MountMethod::Premounted,
-        });
+        if !is_read_only(mp) {
+            return Ok(UsbState {
+                device: candidate.device.clone(),
+                mountpoint: mp.clone(),
+                label: candidate.label.clone(),
+                method: MountMethod::Premounted,
+            });
+        }
+        if mp == Path::new(HELPER_MOUNTPOINT) && Path::new(MOUNT_HELPER).exists() {
+            let _ = Command::new("sudo").args([MOUNT_HELPER, "unmount"]).status();
+        } else {
+            return Ok(UsbState {
+                device: candidate.device.clone(),
+                mountpoint: mp.clone(),
+                label: candidate.label.clone(),
+                method: MountMethod::Premounted,
+            });
+        }
     }
 
     if Path::new(MOUNT_HELPER).exists() {
