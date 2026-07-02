@@ -18,6 +18,21 @@ export interface Game {
     created_at: string;
 }
 
+export interface ArchiveEntry {
+    name: string;
+    extension: string;
+    supported: boolean;
+    console: string;
+}
+
+export interface PendingArchive {
+    archive: true;
+    token: string;
+    filename: string;
+    entries: ArchiveEntry[];
+    supportedCount: number;
+}
+
 export const useGames = () => {
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
@@ -62,7 +77,7 @@ export const useGames = () => {
         }
     };
 
-    const uploadRom = async (file: File) => {
+    const uploadRom = async (file: File): Promise<PendingArchive | null> => {
         const formData = new FormData();
         formData.append("rom", file);
 
@@ -79,11 +94,52 @@ export const useGames = () => {
                 throw new Error(error.error || "Failed to upload ROM");
             }
 
+            const data = await response.json();
+
+            if (data && data.archive) {
+                return data as PendingArchive;
+            }
+
             toast.success("ROM uploaded successfully");
             loadGames();
+            return null;
         } catch (error: any) {
             console.error("Failed to upload ROM:", error);
             toast.error(error.message || "Failed to upload ROM");
+            return null;
+        }
+    };
+
+    const completeArchiveImport = async (
+        token: string,
+        mode: "extract" | "install",
+    ) => {
+        try {
+            const result = await postRequest(`games/import/${token}`, { mode });
+
+            if (mode === "install") {
+                toast.success("ROM uploaded successfully");
+            } else {
+                const installed = result?.installedCount ?? 0;
+                const skipped = result?.skippedCount ?? 0;
+                toast.success(
+                    `Imported ${installed} game${installed === 1 ? "" : "s"}` +
+                        (skipped ? ` (${skipped} skipped)` : ""),
+                );
+            }
+
+            loadGames();
+        } catch (error: any) {
+            console.error("Failed to import archive:", error);
+            toast.error(error.error || error.message || "Failed to import archive");
+        }
+    };
+
+    const cancelArchiveImport = async (token: string) => {
+        try {
+            await deleteRequest(`games/import/${token}`);
+        } catch (error) {
+            console.error("Failed to discard archive import:", error);
         }
     };
 
@@ -198,6 +254,8 @@ export const useGames = () => {
         coverUrls,
         loadGames,
         uploadRom,
+        completeArchiveImport,
+        cancelArchiveImport,
         uploadCover,
         selectCoverFromUrl,
         renameGame,

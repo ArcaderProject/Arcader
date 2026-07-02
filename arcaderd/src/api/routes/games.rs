@@ -6,10 +6,16 @@ use axum::routing::{get, post, put};
 use axum::Router;
 use serde_json::{json, Value};
 
-use crate::api::helpers::{error_response, map_to_value, ok_json, parse_body, serve_file};
+use crate::api::helpers::{
+    error_response, json_response, map_to_value, ok_json, parse_body, serve_file,
+};
 use crate::daemon::socket::{broadcast_cover_updated, broadcast_games_updated};
+use crate::utils::archive::is_archive;
 use crate::utils::database::execute;
 use crate::utils::emulation::{get_cores_for_extension, get_current_game, start_by_filename, stop};
+use crate::utils::imports::{
+    cancel_import, complete_extract, complete_install, stash_archive, ImportError,
+};
 use crate::utils::games::{
     add_game, delete_game, get_all_games, get_cover_art_path, get_game_by_id, update_game_core,
     update_game_name, upload_cover_art,
@@ -19,6 +25,7 @@ use crate::utils::loader::{download_cover_by_url, get_game_covers, lookup_game_i
 pub fn router() -> Router {
     Router::new()
         .route("/", get(list_games).post(upload_game))
+        .route("/import/:token", post(finish_import).delete(discard_import))
         .route("/:id", get(get_game).put(update_name).delete(remove_game))
         .route("/:id/core", put(update_core))
         .route("/:id/cores", get(game_cores))
@@ -69,10 +76,20 @@ async fn upload_game(mut multipart: Multipart) -> Response {
 
     let game_name = game_name.filter(|s| !s.is_empty());
 
+    if is_archive(&original_filename) {
+        return match stash_archive(&original_filename, &buffer) {
+            Ok(summary) => json_response(StatusCode::OK, summary),
+            Err(message) => {
+                eprintln!("Error staging archive: {}", message);
+                error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to read archive")
+            }
+        };
+    }
+
     match add_game(&original_filename, &buffer, game_name) {
         Ok(game) => {
             broadcast_games_updated();
-            crate::api::helpers::json_response(StatusCode::CREATED, map_to_value(game))
+            json_response(StatusCode::CREATED, map_to_value(game))
         }
         Err(message) => {
             eprintln!("Error uploading game: {}", message);
@@ -82,6 +99,44 @@ async fn upload_game(mut multipart: Multipart) -> Response {
                 error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to upload game")
             }
         }
+    }
+}
+
+async fn finish_import(Path(token): Path<String>, body: Bytes) -> Response {
+    let body = parse_body(&body);
+    let mode = body.get("mode").and_then(|v| v.as_str()).unwrap_or("");
+
+    let (result, status) = match mode {
+        "extract" => (complete_extract(&token), StatusCode::OK),
+        "install" => (complete_install(&token), StatusCode::CREATED),
+        _ => {
+            return error_response(
+                StatusCode::BAD_REQUEST,
+                "mode must be \"extract\" or \"install\"",
+            )
+        }
+    };
+
+    match result {
+        Ok(value) => {
+            broadcast_games_updated();
+            json_response(status, value)
+        }
+        Err(ImportError::NotFound) => {
+            error_response(StatusCode::NOT_FOUND, "Import not found or expired")
+        }
+        Err(ImportError::Message(message)) => {
+            eprintln!("Error completing import: {}", message);
+            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to import archive")
+        }
+    }
+}
+
+async fn discard_import(Path(token): Path<String>) -> Response {
+    if cancel_import(&token) {
+        ok_json(json!({ "message": "Import discarded" }))
+    } else {
+        error_response(StatusCode::NOT_FOUND, "Import not found or expired")
     }
 }
 

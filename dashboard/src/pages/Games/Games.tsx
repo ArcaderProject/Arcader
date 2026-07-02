@@ -7,10 +7,11 @@ import { NowPlayingBanner } from "./components/NowPlayingBanner";
 import { EmptyState } from "./components/EmptyState";
 import { GamesGrid } from "./components/GamesGrid";
 import { UploadDialog } from "./components/UploadDialog";
+import { ArchiveImportDialog } from "./components/ArchiveImportDialog";
 import { RenameDialog } from "./components/RenameDialog";
 import { CoverDialog } from "./components/CoverDialog";
 import { LookupCoverDialog } from "./components/LookupCoverDialog";
-import { useGames, type Game } from "./hooks/useGames";
+import { useGames, type Game, type PendingArchive } from "./hooks/useGames";
 import { useCurrentlyPlaying } from "./hooks/useCurrentlyPlaying";
 
 export const Games = ({ embedded = false }: { embedded?: boolean } = {}) => {
@@ -20,6 +21,8 @@ export const Games = ({ embedded = false }: { embedded?: boolean } = {}) => {
         coverUrls,
         loadGames,
         uploadRom,
+        completeArchiveImport,
+        cancelArchiveImport,
         uploadCover,
         selectCoverFromUrl,
         renameGame,
@@ -31,6 +34,9 @@ export const Games = ({ embedded = false }: { embedded?: boolean } = {}) => {
         useCurrentlyPlaying();
 
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [pendingArchive, setPendingArchive] = useState<PendingArchive | null>(
+        null,
+    );
     const [renameDialogOpen, setRenameDialogOpen] = useState(false);
     const [coverDialogOpen, setCoverDialogOpen] = useState(false);
     const [lookupCoverDialogOpen, setLookupCoverDialogOpen] = useState(false);
@@ -54,8 +60,28 @@ export const Games = ({ embedded = false }: { embedded?: boolean } = {}) => {
     }, [games, searchQuery]);
 
     const handleUploadRom = async (file: File) => {
-        await uploadRom(file);
+        const archive = await uploadRom(file);
         setUploadDialogOpen(false);
+        if (archive) setPendingArchive(archive);
+    };
+
+    const handleArchiveExtract = async () => {
+        if (!pendingArchive) return;
+        const token = pendingArchive.token;
+        setPendingArchive(null);
+        await completeArchiveImport(token, "extract");
+    };
+
+    const handleArchiveInstall = async () => {
+        if (!pendingArchive) return;
+        const token = pendingArchive.token;
+        setPendingArchive(null);
+        await completeArchiveImport(token, "install");
+    };
+
+    const handleArchiveCancel = () => {
+        if (pendingArchive) cancelArchiveImport(pendingArchive.token);
+        setPendingArchive(null);
     };
 
     const handleUploadCover = async (file: File) => {
@@ -180,6 +206,14 @@ export const Games = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 isDragging={isDraggingRom}
                 onDragStart={() => setIsDraggingRom(true)}
                 onDragEnd={() => setIsDraggingRom(false)}
+            />
+
+            <ArchiveImportDialog
+                open={pendingArchive !== null}
+                archive={pendingArchive}
+                onExtract={handleArchiveExtract}
+                onInstall={handleArchiveInstall}
+                onCancel={handleArchiveCancel}
             />
 
             <RenameDialog

@@ -1,4 +1,5 @@
 pub mod apps;
+pub mod archive;
 pub mod audio;
 pub mod config;
 pub mod database;
@@ -9,6 +10,7 @@ pub mod frontends;
 pub mod game_saves;
 pub mod games;
 pub mod ids;
+pub mod imports;
 pub mod loader;
 pub mod paths;
 pub mod retroarch_config;
