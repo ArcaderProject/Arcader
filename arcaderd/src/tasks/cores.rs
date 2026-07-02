@@ -6,7 +6,7 @@ use crate::tasks::TaskResult;
 use crate::utils::directory::{are_cores_installed, ensure_data_directories, is_retro_arch_installed};
 use crate::utils::download::{
     build_retro_arch_cores_url, download_file, extract_7z, get_system_architecture,
-    wait_for_internet, RETROARCH_VERSION,
+    wait_for_clock_sync, wait_for_internet, RETROARCH_VERSION,
 };
 use crate::utils::paths::cwd;
 
@@ -182,6 +182,8 @@ pub async fn ensure_retro_arch_cores() -> TaskResult {
                     .to_string(),
         };
     }
+
+    wait_for_clock_sync(30, Duration::from_secs(2)).await;
 
     let download_url = build_retro_arch_cores_url(RETROARCH_VERSION, &get_system_architecture());
     let archive_path = retroarch_dir.join("RetroArch_cores.7z");

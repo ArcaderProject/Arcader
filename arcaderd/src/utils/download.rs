@@ -69,6 +69,39 @@ pub async fn wait_for_internet(max_retries: u32, retry_delay: Duration) -> bool 
     false
 }
 
+pub async fn is_clock_synchronized() -> bool {
+    match tokio::process::Command::new("timedatectl")
+        .args(["show", "-p", "NTPSynchronized", "--value"])
+        .output()
+        .await
+    {
+        Ok(output) => String::from_utf8_lossy(&output.stdout).trim() == "yes",
+        Err(_) => false,
+    }
+}
+
+pub async fn wait_for_clock_sync(max_retries: u32, retry_delay: Duration) -> bool {
+    for i in 0..max_retries {
+        println!(
+            "Waiting for system clock synchronization (attempt {}/{})...",
+            i + 1,
+            max_retries
+        );
+
+        if is_clock_synchronized().await {
+            println!("System clock synchronized");
+            return true;
+        }
+
+        if i < max_retries - 1 {
+            tokio::time::sleep(retry_delay).await;
+        }
+    }
+
+    println!("System clock not synchronized after all retries; proceeding anyway");
+    false
+}
+
 pub async fn download_file(url: &str, output_path: &Path) -> Result<(), String> {
     println!("Downloading: {}", url);
 

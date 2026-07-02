@@ -49,6 +49,25 @@ pub fn ensure_data_directories(working_dir: &Path) -> DataDirectories {
     }
 }
 
+pub fn ensure_executable(path: &Path) {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        if let Ok(metadata) = fs::metadata(path) {
+            let mut perms = metadata.permissions();
+            let mode = perms.mode();
+            let desired = mode | ((mode & 0o444) >> 2);
+            if desired != mode {
+                perms.set_mode(desired);
+                let _ = fs::set_permissions(path, perms);
+            }
+        }
+    }
+    #[cfg(not(unix))]
+    let _ = path;
+}
+
 pub fn is_retro_arch_installed() -> bool {
     let retroarch_dir = Path::new(".").join("data").join("retroarch");
     let retroarch_app_image = retroarch_dir.join(get_retro_arch_app_image_name());

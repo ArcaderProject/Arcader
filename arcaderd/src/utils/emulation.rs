@@ -11,7 +11,9 @@ use serde_json::Value;
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 use crate::daemon::handlers::start_game::broadcast_update_screen;
-use crate::utils::directory::{get_retro_arch_app_image_name, get_retro_arch_home_dir_name};
+use crate::utils::directory::{
+    ensure_executable, get_retro_arch_app_image_name, get_retro_arch_home_dir_name,
+};
 use crate::utils::game_saves::{get_active_save_folder, get_save_folder_path};
 use crate::utils::paths::cwd;
 use crate::utils::retroarch_config::apply_retro_arch_config_overrides;
@@ -347,6 +349,8 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         .join("retroarch")
         .join(get_retro_arch_app_image_name());
     let cores_path = cwd().join("data").join("cores").join(core);
+
+    ensure_executable(&retroarch_path);
 
     {
         let current = *CURRENT_PID.lock().unwrap();

@@ -2,11 +2,12 @@ use std::time::Duration;
 
 use crate::tasks::TaskResult;
 use crate::utils::directory::{
-    ensure_data_directories, is_retro_arch_installed, move_directory_contents,
+    ensure_data_directories, ensure_executable, get_retro_arch_app_image_name,
+    is_retro_arch_installed, move_directory_contents,
 };
 use crate::utils::download::{
-    build_retro_arch_url, download_file, extract_7z, get_system_architecture, wait_for_internet,
-    RETROARCH_VERSION,
+    build_retro_arch_url, download_file, extract_7z, get_system_architecture, wait_for_clock_sync,
+    wait_for_internet, RETROARCH_VERSION,
 };
 use crate::utils::paths::cwd;
 
@@ -29,6 +30,8 @@ pub async fn ensure_retro_arch() -> Result<(), String> {
         );
     }
 
+    wait_for_clock_sync(30, Duration::from_secs(2)).await;
+
     let download_url = build_retro_arch_url(RETROARCH_VERSION, &get_system_architecture());
     let archive_path = retroarch_dir.join("RetroArch.7z");
 
@@ -41,6 +44,8 @@ pub async fn ensure_retro_arch() -> Result<(), String> {
         move_directory_contents(&extracted_sub_dir, &retroarch_dir);
         println!("Moved RetroArch files to retroarch directory");
     }
+
+    ensure_executable(&retroarch_dir.join(get_retro_arch_app_image_name()));
 
     if is_retro_arch_installed() {
         println!("RetroArch setup completed");
