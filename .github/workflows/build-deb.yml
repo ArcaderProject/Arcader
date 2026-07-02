@@ -43,13 +43,6 @@ jobs:
       with:
         version: latest
 
-    - name: Setup Godot
-      uses: chickensoft-games/setup-godot@v2
-      with:
-        version: 4.6.0
-        use-dotnet: false
-        include-templates: true
-
     - name: Install arduino-cli (coin acceptor firmware)
       uses: arduino/setup-arduino-cli@v2
 
