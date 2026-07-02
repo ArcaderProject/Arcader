@@ -43,6 +43,7 @@ func _ready() -> void:
 	Communicator.games_error.connect(_on_games_error)
 	Communicator.game_start_error.connect(_on_game_start_error)
 	Communicator.connection_restored.connect(_on_connection_restored)
+	Communicator.games_changed.connect(_on_games_changed)
 	CoverCache.cover_ready.connect(_on_cover_ready)
 
 	_show_loading("Loading games...")
@@ -83,6 +84,9 @@ func _on_game_start_error(error: String) -> void:
 
 func _on_connection_restored() -> void:
 	_show_loading("Loading games...")
+	Communicator.get_games()
+
+func _on_games_changed() -> void:
 	Communicator.get_games()
 
 func _on_cover_ready(game_id: String, texture: Texture2D) -> void:

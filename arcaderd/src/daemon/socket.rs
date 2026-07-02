@@ -35,6 +35,17 @@ pub fn broadcast_to_all(message: &Value) {
     }
 }
 
+pub fn broadcast_games_updated() {
+    broadcast_to_all(&serde_json::json!({ "type": "GAMES_UPDATED" }));
+}
+
+pub fn broadcast_cover_updated(game_id: &str) {
+    broadcast_to_all(&serde_json::json!({
+        "type": "COVER_UPDATED",
+        "data": { "gameId": game_id },
+    }));
+}
+
 pub fn send_response(handle: &ClientHandle, response: &Value) {
     let json_response = response.to_string() + "\n";
     if let Err(error) = handle.send(json_response) {

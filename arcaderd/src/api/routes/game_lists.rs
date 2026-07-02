@@ -8,6 +8,7 @@ use rand::RngCore;
 use serde_json::{json, Value};
 
 use crate::api::helpers::{error_response, json_response, map_to_value, ok_json, parse_body};
+use crate::daemon::socket::broadcast_games_updated;
 use crate::utils::config::{get_config, set_config};
 use crate::utils::database::{execute, query_json, query_one_json, try_execute, with_transaction};
 
@@ -70,6 +71,8 @@ async fn set_selected(body: Bytes) -> Response {
     };
 
     set_config(CONFIG_KEY, &list_id);
+
+    broadcast_games_updated();
 
     ok_json(json!({ "message": "Selected list updated successfully", "list": map_to_value(list) }))
 }
@@ -158,6 +161,8 @@ async fn delete_list(Path(id): Path<String>) -> Response {
 
     execute("DELETE FROM game_lists WHERE id = ?", &[&id]);
 
+    broadcast_games_updated();
+
     ok_json(json!({ "message": "List deleted successfully" }))
 }
 
@@ -210,7 +215,10 @@ async fn set_list_games(Path(id): Path<String>, body: Bytes) -> Response {
     });
 
     match inserted {
-        Ok(count) => ok_json(json!({ "message": "Games updated successfully", "count": count })),
+        Ok(count) => {
+            broadcast_games_updated();
+            ok_json(json!({ "message": "Games updated successfully", "count": count }))
+        }
         Err(message) => {
             eprintln!("Error updating games in list: {}", message);
             error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to update games in list")

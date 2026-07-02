@@ -6,7 +6,10 @@ use axum::Router;
 use serde_json::{json, Map, Value};
 
 use crate::api::helpers::{error_response, ok_json, parse_body};
+use crate::coin::{broadcast_coin_status, coin_slot_enabled};
+use crate::daemon::handlers::start_game::broadcast_update_screen;
 use crate::utils::config::{get_config, set_config};
+use crate::utils::emulation::get_current_game;
 
 const UI_CONFIG_KEYS: [&str; 7] = [
     "coinScreen.insertMessage",
@@ -50,6 +53,8 @@ async fn update_config(body: Bytes) -> Response {
         None => return error_response(StatusCode::BAD_REQUEST, "Invalid config data"),
     };
 
+    let coin_slot_before = coin_slot_enabled();
+
     for (key, value) in obj {
         if UI_CONFIG_KEYS.contains(&key.as_str()) {
             let string_value = match value {
@@ -64,6 +69,13 @@ async fn update_config(body: Bytes) -> Response {
                 &format!("Config key '{}' is not accessible to UI", key),
             );
         }
+    }
+
+    broadcast_coin_status();
+
+    let coin_slot_after = coin_slot_enabled();
+    if !coin_slot_before && coin_slot_after && get_current_game().is_none() {
+        broadcast_update_screen("COIN");
     }
 
     ok_json(json!({ "success": true }))

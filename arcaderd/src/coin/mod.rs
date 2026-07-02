@@ -46,12 +46,30 @@ pub fn coin_status_value() -> Value {
     })
 }
 
+pub fn coin_status_full() -> Value {
+    let mut data = coin_status_value();
+    if let Value::Object(ref mut map) = data {
+        map.insert("coinSlotEnabled".to_string(), Value::Bool(coin_slot_enabled()));
+        map.insert(
+            "konamiCodeEnabled".to_string(),
+            Value::Bool(get_config("coinScreen.konamiCodeEnabled", None).as_deref() == Some("true")),
+        );
+        if let Some(msg) = get_config("coinScreen.insertMessage", None) {
+            map.insert("insertMessage".to_string(), Value::from(msg));
+        }
+        if let Some(msg) = get_config("coinScreen.infoMessage", None) {
+            map.insert("infoMessage".to_string(), Value::from(msg));
+        }
+    }
+    data
+}
+
 pub fn broadcast_coin_status() {
-    broadcast_to_all(&json!({ "type": "COIN_STATUS", "data": coin_status_value() }));
+    broadcast_to_all(&json!({ "type": "COIN_STATUS", "data": coin_status_full() }));
 }
 
 pub fn broadcast_coin_inserted() {
-    broadcast_to_all(&json!({ "type": "COIN_INSERTED", "data": coin_status_value() }));
+    broadcast_to_all(&json!({ "type": "COIN_INSERTED", "data": coin_status_full() }));
 }
 
 pub fn register_coin() {

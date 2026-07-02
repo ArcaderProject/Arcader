@@ -2,10 +2,12 @@ extends "res://api.gd"
 
 signal games_received(games: Array)
 signal games_error(error: String)
+signal games_changed()
 signal game_started(game_info: Dictionary)
 signal game_start_error(error: String)
 signal screen_updated(screen: String)
 signal cover_received(game_id: String, cover_data: String)
+signal cover_updated(game_id: String)
 signal coin_status(status: Dictionary)
 signal coin_inserted(status: Dictionary)
 signal timer_started(remaining_seconds: int)
@@ -122,6 +124,14 @@ func handle_message(msg: Dictionary) -> void:
 	
 	if msg["type"] == "UPDATE_SCREEN":
 		_handle_update_screen(msg)
+		return
+
+	if msg["type"] == "GAMES_UPDATED":
+		emit_signal("games_changed")
+		return
+
+	if msg["type"] == "COVER_UPDATED":
+		emit_signal("cover_updated", String(msg.get("data", {}).get("gameId", "")))
 		return
 
 	if msg["type"] == "COIN_INSERTED":

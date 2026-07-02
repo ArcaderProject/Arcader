@@ -29,6 +29,7 @@ var _repeat := NavRepeat.new()
 func _ready() -> void:
 	Communicator.games_received.connect(_on_games_received)
 	Communicator.game_start_error.connect(func(e): _flash_error("Error: " + e))
+	Communicator.games_changed.connect(func(): Communicator.get_games())
 	CoverCache.cover_ready.connect(_on_cover_ready)
 
 	key_nodes = $Keys.get_children()

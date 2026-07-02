@@ -7,6 +7,7 @@ var _requested: Dictionary = {}
 
 func _ready() -> void:
 	Communicator.cover_received.connect(_on_cover_received)
+	Communicator.cover_updated.connect(_on_cover_updated)
 
 func get_texture(game_id: String) -> Texture2D:
 	return _textures.get(game_id, null)
@@ -16,6 +17,13 @@ func request_cover(game_id: String) -> void:
 		return
 	_requested[game_id] = true
 	Communicator.get_cover(game_id)
+
+func _on_cover_updated(game_id: String) -> void:
+	if game_id == "":
+		return
+	_textures.erase(game_id)
+	_requested.erase(game_id)
+	request_cover(game_id)
 
 func _on_cover_received(game_id: String, cover_data: String) -> void:
 	_requested.erase(game_id)

@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-use crate::coin::{broadcast_coin_status, coin_slot_enabled, coin_status_value, credits};
+use crate::coin::{broadcast_coin_status, coin_status_full, credits};
 use crate::daemon::socket::{send_error, send_response, ClientHandle};
 use crate::utils::config::get_config;
 
@@ -8,21 +8,7 @@ pub const GET_COIN_STATUS_MESSAGE_TYPE: &str = "GET_COIN_STATUS";
 pub const SET_FREE_PLAY_MESSAGE_TYPE: &str = "SET_FREE_PLAY";
 
 fn status_data() -> Value {
-    let mut data = coin_status_value();
-    if let Value::Object(ref mut map) = data {
-        map.insert("coinSlotEnabled".to_string(), Value::Bool(coin_slot_enabled()));
-        map.insert(
-            "konamiCodeEnabled".to_string(),
-            Value::Bool(get_config("coinScreen.konamiCodeEnabled", None).as_deref() == Some("true")),
-        );
-        if let Some(msg) = get_config("coinScreen.insertMessage", None) {
-            map.insert("insertMessage".to_string(), Value::from(msg));
-        }
-        if let Some(msg) = get_config("coinScreen.infoMessage", None) {
-            map.insert("infoMessage".to_string(), Value::from(msg));
-        }
-    }
-    data
+    coin_status_full()
 }
 
 pub fn handle_get_coin_status(handle: &ClientHandle, request_id: Value) {

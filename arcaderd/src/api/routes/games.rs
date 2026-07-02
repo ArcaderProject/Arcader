@@ -7,6 +7,7 @@ use axum::Router;
 use serde_json::{json, Value};
 
 use crate::api::helpers::{error_response, map_to_value, ok_json, parse_body, serve_file};
+use crate::daemon::socket::{broadcast_cover_updated, broadcast_games_updated};
 use crate::utils::database::execute;
 use crate::utils::emulation::{get_cores_for_extension, get_current_game, start_by_filename, stop};
 use crate::utils::games::{
@@ -69,7 +70,10 @@ async fn upload_game(mut multipart: Multipart) -> Response {
     let game_name = game_name.filter(|s| !s.is_empty());
 
     match add_game(&original_filename, &buffer, game_name) {
-        Ok(game) => crate::api::helpers::json_response(StatusCode::CREATED, map_to_value(game)),
+        Ok(game) => {
+            broadcast_games_updated();
+            crate::api::helpers::json_response(StatusCode::CREATED, map_to_value(game))
+        }
         Err(message) => {
             eprintln!("Error uploading game: {}", message);
             if message.contains("Unsupported file extension") {
@@ -93,6 +97,8 @@ async fn update_name(Path(id): Path<String>, body: Bytes) -> Response {
         return error_response(StatusCode::NOT_FOUND, "Game not found");
     }
 
+    broadcast_games_updated();
+
     match get_game_by_id(&id) {
         Some(game) => ok_json(map_to_value(game)),
         None => ok_json(Value::Null),
@@ -110,6 +116,8 @@ async fn update_core(Path(id): Path<String>, body: Bytes) -> Response {
     if !update_game_core(&id, core) {
         return error_response(StatusCode::NOT_FOUND, "Game not found");
     }
+
+    broadcast_games_updated();
 
     match get_game_by_id(&id) {
         Some(game) => ok_json(map_to_value(game)),
@@ -132,6 +140,7 @@ async fn remove_game(Path(id): Path<String>) -> Response {
     if !delete_game(&id) {
         return error_response(StatusCode::NOT_FOUND, "Game not found");
     }
+    broadcast_games_updated();
     ok_json(json!({ "message": "Game deleted successfully" }))
 }
 
@@ -152,7 +161,10 @@ async fn upload_cover(Path(id): Path<String>, mut multipart: Multipart) -> Respo
     };
 
     match upload_cover_art(&id, &buffer) {
-        Ok(true) => ok_json(json!({ "message": "Cover art uploaded successfully" })),
+        Ok(true) => {
+            broadcast_cover_updated(&id);
+            ok_json(json!({ "message": "Cover art uploaded successfully" }))
+        }
         Ok(false) => error_response(StatusCode::NOT_FOUND, "Game not found"),
         Err(message) => {
             eprintln!("Error uploading cover art: {}", message);
@@ -221,6 +233,8 @@ async fn cover_from_url(Path(id): Path<String>, body: Bytes) -> Response {
     }
 
     execute("UPDATE roms SET cover_art = 1 WHERE id = ?", &[&id]);
+
+    broadcast_cover_updated(&id);
 
     ok_json(json!({ "message": "Cover art updated successfully" }))
 }
