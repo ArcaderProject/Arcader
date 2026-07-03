@@ -7,7 +7,10 @@ use crate::utils::config::get_config;
 use crate::utils::paths::cwd;
 
 fn cover_path(game_id: &str) -> PathBuf {
-    cwd().join("data").join("covers").join(format!("{}.jpg", game_id))
+    cwd()
+        .join("data")
+        .join("covers")
+        .join(format!("{}.jpg", game_id))
 }
 
 async fn download_file(url: &str, file_path: &PathBuf) -> Result<(), String> {
@@ -140,7 +143,9 @@ fn urlencoding(input: &str) -> String {
     let mut out = String::new();
     for byte in input.bytes() {
         let c = byte as char;
-        if c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | '!' | '~' | '*' | '\'' | '(' | ')') {
+        if c.is_ascii_alphanumeric()
+            || matches!(c, '-' | '_' | '.' | '!' | '~' | '*' | '\'' | '(' | ')')
+        {
             out.push(c);
         } else {
             out.push_str(&format!("%{:02X}", byte));

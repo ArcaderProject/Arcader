@@ -111,10 +111,7 @@ pub async fn download_file(url: &str, output_path: &Path) -> Result<(), String> 
         return Err(format!(
             "HTTP {}: {}",
             response.status().as_u16(),
-            response
-                .status()
-                .canonical_reason()
-                .unwrap_or("")
+            response.status().canonical_reason().unwrap_or("")
         ));
     }
 

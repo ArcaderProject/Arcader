@@ -54,9 +54,12 @@ pub fn get_app_by_id(app_id: &str) -> Option<Map<String, Value>> {
 }
 
 fn next_position() -> i64 {
-    query_one_json("SELECT COALESCE(MAX(position), -1) + 1 AS next FROM apps", &[])
-        .and_then(|row| row.get("next").and_then(|v| v.as_i64()))
-        .unwrap_or(0)
+    query_one_json(
+        "SELECT COALESCE(MAX(position), -1) + 1 AS next FROM apps",
+        &[],
+    )
+    .and_then(|row| row.get("next").and_then(|v| v.as_i64()))
+    .unwrap_or(0)
 }
 
 pub fn add_app(
@@ -146,7 +149,9 @@ pub fn update_app(app_id: &str, body: &Value) -> Result<bool, String> {
             .filter_map(|a| a.as_str().map(|s| s.to_string()))
             .collect();
         sets.push("args = ?".to_string());
-        values.push(Box::new(serde_json::to_string(&args).unwrap_or_else(|_| "[]".to_string())));
+        values.push(Box::new(
+            serde_json::to_string(&args).unwrap_or_else(|_| "[]".to_string()),
+        ));
     }
     if let Some(field) = body.get("enabled").and_then(|v| v.as_bool()) {
         sets.push("enabled = ?".to_string());

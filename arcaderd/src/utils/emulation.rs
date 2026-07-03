@@ -27,16 +27,14 @@ pub struct Core {
     pub corename: String,
 }
 
-static CURRENT_PID: Lazy<std::sync::Mutex<Option<i32>>> =
-    Lazy::new(|| std::sync::Mutex::new(None));
+static CURRENT_PID: Lazy<std::sync::Mutex<Option<i32>>> = Lazy::new(|| std::sync::Mutex::new(None));
 static CURRENT_GAME: Lazy<std::sync::Mutex<Option<Value>>> =
     Lazy::new(|| std::sync::Mutex::new(None));
 static CURRENT_TEMP_SAVE_FOLDER: Lazy<std::sync::Mutex<Option<String>>> =
     Lazy::new(|| std::sync::Mutex::new(None));
 static CORES: Lazy<std::sync::Mutex<Vec<Core>>> = Lazy::new(|| std::sync::Mutex::new(Vec::new()));
 
-static INFO_LINE_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new("^(\\w+)\\s*=\\s*\"(.+)\"$").unwrap());
+static INFO_LINE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\w+)\\s*=\\s*\"(.+)\"$").unwrap());
 
 fn parse_info_file(file_path: &Path) -> Option<HashMap<String, String>> {
     let content = match fs::read_to_string(file_path) {
@@ -340,6 +338,22 @@ pub fn start_emulator(core: &str, game_file: &str, game_info: Option<Value>) -> 
         config_overrides.insert(key.to_string(), "false".to_string());
     }
 
+    if let Some(game_id) = game_info
+        .as_ref()
+        .and_then(|g| g.get("id"))
+        .and_then(|v| v.as_str())
+    {
+        let controller_overrides = crate::utils::controller_profiles::overrides_for_game(game_id);
+        if !controller_overrides.is_empty() {
+            println!(
+                "Applying controller profile bindings ({} keys) for game {}",
+                controller_overrides.len(),
+                game_id
+            );
+            config_overrides.extend(controller_overrides);
+        }
+    }
+
     if !config_overrides.is_empty() {
         apply_retro_arch_config_overrides(&config_overrides);
     }
@@ -382,7 +396,9 @@ fn apply_display_env(command: &mut tokio::process::Command) {
         let home = std::env::var("HOME").unwrap_or_default();
         format!("{}/.Xauthority", home)
     });
-    command.env("DISPLAY", display).env("XAUTHORITY", xauthority);
+    command
+        .env("DISPLAY", display)
+        .env("XAUTHORITY", xauthority);
 }
 
 fn spawn_tracked(mut command: tokio::process::Command, content_info: Option<Value>) -> bool {

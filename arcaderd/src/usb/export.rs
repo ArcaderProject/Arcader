@@ -43,7 +43,11 @@ fn build_game_entries() -> Vec<GameEntry> {
 
     for (i, row) in rows.into_iter().enumerate() {
         emit_progress("hashing", i, total);
-        let id = row.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
+        let id = row
+            .get("id")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
         let filename = row
             .get("filename")
             .and_then(|v| v.as_str())
@@ -60,11 +64,26 @@ fn build_game_entries() -> Vec<GameEntry> {
 
         entries.push(GameEntry {
             id,
-            name: row.get("name").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
-            extension: row.get("extension").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
-            core: row.get("core").and_then(|v| v.as_str()).map(|s| s.to_string()),
+            name: row
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string(),
+            extension: row
+                .get("extension")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string(),
+            core: row
+                .get("core")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string()),
             filename,
-            cover_art: row.get("cover_art").and_then(|v| v.as_i64()).map(|n| n != 0).unwrap_or(false),
+            cover_art: row
+                .get("cover_art")
+                .and_then(|v| v.as_i64())
+                .map(|n| n != 0)
+                .unwrap_or(false),
             sha,
         });
     }
@@ -80,12 +99,18 @@ fn export_games(mountpoint: &Path, entries: &[GameEntry]) -> Result<usize, Strin
     for (i, entry) in entries.iter().enumerate() {
         emit_progress("games", i, total);
 
-        copy_file(&local_roms_dir().join(&entry.filename), &games_dir.join(format!("{}.rom", entry.sha)))?;
+        copy_file(
+            &local_roms_dir().join(&entry.filename),
+            &games_dir.join(format!("{}.rom", entry.sha)),
+        )?;
 
         if entry.cover_art {
             let cover_src = local_covers_dir().join(format!("{}.jpg", entry.id));
             if cover_src.exists() {
-                copy_file(&cover_src, &games_dir.join(format!("{}.cover.jpg", entry.sha)))?;
+                copy_file(
+                    &cover_src,
+                    &games_dir.join(format!("{}.cover.jpg", entry.sha)),
+                )?;
             }
         }
 
@@ -114,16 +139,35 @@ fn export_lists(mountpoint: &Path, id_to_sha: &HashMap<String, String>) -> Resul
     let mut out_lists: Vec<Value> = Vec::new();
 
     for list in &lists {
-        let list_id = list.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
-        let name = list.get("name").and_then(|v| v.as_str()).unwrap_or_default().to_string();
-        let list_type = list.get("type").and_then(|v| v.as_str()).unwrap_or("exclude").to_string();
-        let is_default = list.get("is_default").and_then(|v| v.as_i64()).map(|n| n != 0).unwrap_or(false);
+        let list_id = list
+            .get("id")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
+        let name = list
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
+        let list_type = list
+            .get("type")
+            .and_then(|v| v.as_str())
+            .unwrap_or("exclude")
+            .to_string();
+        let is_default = list
+            .get("is_default")
+            .and_then(|v| v.as_i64())
+            .map(|n| n != 0)
+            .unwrap_or(false);
 
         if list_id == selected_id {
             selected_name = Some(name.clone());
         }
 
-        let items = query_json("SELECT game_id FROM game_list_items WHERE list_id = ?", &[&list_id]);
+        let items = query_json(
+            "SELECT game_id FROM game_list_items WHERE list_id = ?",
+            &[&list_id],
+        );
         let item_shas: Vec<Value> = items
             .iter()
             .filter_map(|it| it.get("game_id").and_then(|v| v.as_str()))
@@ -144,8 +188,11 @@ fn export_lists(mountpoint: &Path, id_to_sha: &HashMap<String, String>) -> Resul
         ensure_dir(parent)?;
     }
     let doc = json!({ "lists": out_lists, "selected": selected_name });
-    fs::write(&path, serde_json::to_string_pretty(&doc).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
+    fs::write(
+        &path,
+        serde_json::to_string_pretty(&doc).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(out_lists.len())
 }
@@ -163,7 +210,11 @@ fn export_saves(mountpoint: &Path, id_to_sha: &HashMap<String, String>) -> Resul
     let mut file_count = 0;
 
     for folder in &folders {
-        let uuid = folder.get("uuid").and_then(|v| v.as_str()).unwrap_or_default().to_string();
+        let uuid = folder
+            .get("uuid")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
         if uuid.is_empty() {
             continue;
         }
@@ -220,7 +271,10 @@ fn export_settings(mountpoint: &Path) -> Result<usize, String> {
     let mut obj = Map::new();
     for row in &rows {
         if let Some(key) = row.get("key").and_then(|v| v.as_str()) {
-            obj.insert(key.to_string(), row.get("value").cloned().unwrap_or(Value::Null));
+            obj.insert(
+                key.to_string(),
+                row.get("value").cloned().unwrap_or(Value::Null),
+            );
         }
     }
 
@@ -249,9 +303,15 @@ pub fn run_export(mountpoint: &Path, cats: &Categories, created_at: &str) -> Res
     }
     ensure_dir(&root)?;
 
-    let entries = if cats.needs_game_map() { build_game_entries() } else { Vec::new() };
-    let id_to_sha: HashMap<String, String> =
-        entries.iter().map(|e| (e.id.clone(), e.sha.clone())).collect();
+    let entries = if cats.needs_game_map() {
+        build_game_entries()
+    } else {
+        Vec::new()
+    };
+    let id_to_sha: HashMap<String, String> = entries
+        .iter()
+        .map(|e| (e.id.clone(), e.sha.clone()))
+        .collect();
 
     let mut contents = Contents::default();
     if cats.games {
@@ -269,7 +329,11 @@ pub fn run_export(mountpoint: &Path, cats: &Categories, created_at: &str) -> Res
 
     write_manifest(
         mountpoint,
-        &Manifest { version: FORMAT_VERSION, created_at: created_at.to_string(), contents },
+        &Manifest {
+            version: FORMAT_VERSION,
+            created_at: created_at.to_string(),
+            contents,
+        },
     )?;
 
     Ok(json!({

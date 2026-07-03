@@ -536,7 +536,7 @@ export const Settings = () => {
                                         />
                                         <p className="text-xs text-muted-foreground mt-2">
                                             Applied when you save. Takes effect
-                                            immediately on the cabinet.
+                                            immediately on the arcade machine.
                                         </p>
                                     </div>
                                 </div>

@@ -16,7 +16,11 @@ fn parse_categories(data: &Value) -> Categories {
     let items: Vec<String> = data
         .get("categories")
         .and_then(|v| v.as_array())
-        .map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect())
+        .map(|a| {
+            a.iter()
+                .filter_map(|x| x.as_str().map(String::from))
+                .collect()
+        })
         .unwrap_or_default();
     Categories::from_list(&items)
 }
@@ -75,10 +79,16 @@ where
     std::thread::spawn(move || {
         let response = match mountpoint {
             Some(mp) => match run(mp) {
-                Ok(summary) => json!({ "requestId": request_id, "type": response_type, "success": true, "data": summary }),
-                Err(error) => json!({ "requestId": request_id, "type": response_type, "success": false, "error": error }),
+                Ok(summary) => {
+                    json!({ "requestId": request_id, "type": response_type, "success": true, "data": summary })
+                }
+                Err(error) => {
+                    json!({ "requestId": request_id, "type": response_type, "success": false, "error": error })
+                }
             },
-            None => json!({ "requestId": request_id, "type": response_type, "success": false, "error": "No USB stick mounted" }),
+            None => {
+                json!({ "requestId": request_id, "type": response_type, "success": false, "error": "No USB stick mounted" })
+            }
         };
         send_response(&handle, &response);
     });

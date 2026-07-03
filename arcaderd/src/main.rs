@@ -1,5 +1,6 @@
 mod api;
 mod coin;
+mod controller;
 mod daemon;
 mod migrations;
 mod overlay;
@@ -25,6 +26,26 @@ async fn main() {
         }
         Some("coin-flash") => {
             coin::force_flash();
+            return;
+        }
+        Some("controller-dump") => {
+            let pads = controller::capture::list_joypads();
+            if pads.is_empty() {
+                println!("No joypads detected");
+            }
+            for (i, pad) in pads.iter().enumerate() {
+                println!(
+                    "Joypad {} (player {}): {} [{}]",
+                    i,
+                    i + 1,
+                    pad.name,
+                    pad.path.display()
+                );
+                match controller::capture::CaptureDevice::open(&pad.path) {
+                    Ok(device) => device.dump(),
+                    Err(e) => println!("  error: {}", e),
+                }
+            }
             return;
         }
         _ => {}

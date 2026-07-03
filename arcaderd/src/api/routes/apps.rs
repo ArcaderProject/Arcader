@@ -9,8 +9,8 @@ use serde_json::{json, Value};
 use crate::api::helpers::{error_response, json_response, ok_json, parse_body, serve_file};
 use crate::daemon::socket::broadcast_apps_updated;
 use crate::utils::apps::{
-    add_app, delete_app, get_all_apps, get_app_by_id, get_app_icon_path, reorder_apps, to_client_json,
-    update_app, upload_app_icon,
+    add_app, delete_app, get_all_apps, get_app_by_id, get_app_icon_path, reorder_apps,
+    to_client_json, update_app, upload_app_icon,
 };
 
 pub fn router() -> Router {
@@ -18,7 +18,10 @@ pub fn router() -> Router {
         .route("/", get(list_apps).post(create_app))
         .route("/reorder", post(reorder))
         .route("/:id", get(get_app).put(update).delete(remove_app))
-        .route("/:id/icon", post(upload_icon).put(upload_icon).get(get_icon))
+        .route(
+            "/:id/icon",
+            post(upload_icon).put(upload_icon).get(get_icon),
+        )
         .route("/:id/launch", post(launch))
 }
 
@@ -45,7 +48,11 @@ async fn create_app(body: Bytes) -> Response {
     let args: Vec<String> = body
         .get("args")
         .and_then(|v| v.as_array())
-        .map(|a| a.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect())
+        .map(|a| {
+            a.iter()
+                .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                .collect()
+        })
         .unwrap_or_default();
 
     match add_app(name, app_type, url, user_agent, exec, &args) {
@@ -84,7 +91,10 @@ async fn remove_app(Path(id): Path<String>) -> Response {
 async fn reorder(body: Bytes) -> Response {
     let body = parse_body(&body);
     let order: Vec<String> = match body.get("order").and_then(|v| v.as_array()) {
-        Some(arr) => arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect(),
+        Some(arr) => arr
+            .iter()
+            .filter_map(|v| v.as_str().map(|s| s.to_string()))
+            .collect(),
         None => return error_response(StatusCode::BAD_REQUEST, "order array is required"),
     };
 

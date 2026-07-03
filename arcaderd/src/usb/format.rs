@@ -26,7 +26,12 @@ impl Categories {
         };
 
         if has(&["all"]) {
-            return Categories { games: true, saves: true, lists: true, settings: true };
+            return Categories {
+                games: true,
+                saves: true,
+                lists: true,
+                settings: true,
+            };
         }
 
         Categories {

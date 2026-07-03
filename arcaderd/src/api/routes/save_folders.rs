@@ -17,7 +17,10 @@ use crate::utils::games::get_game_by_id;
 pub fn router() -> Router {
     Router::new()
         .route("/", get(list_folders).post(create_folder))
-        .route("/:uuid", axum::routing::put(rename_folder).delete(remove_folder))
+        .route(
+            "/:uuid",
+            axum::routing::put(rename_folder).delete(remove_folder),
+        )
         .route("/:uuid/activate", post(activate_folder))
         .route("/:uuid/lock", post(lock_folder))
         .route("/:uuid/unlock", post(unlock_folder))
@@ -67,7 +70,10 @@ async fn rename_folder(Path(uuid): Path<String>, body: Bytes) -> Response {
             if message == "Cannot rename global profile" {
                 return error_response(StatusCode::FORBIDDEN, &message);
             }
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to update save folder")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to update save folder",
+            )
         }
     }
 }
@@ -80,7 +86,10 @@ async fn activate_folder(Path(uuid): Path<String>) -> Response {
             if message == "Save folder not found" {
                 return error_response(StatusCode::NOT_FOUND, &message);
             }
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to activate save folder")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to activate save folder",
+            )
         }
     }
 }
@@ -106,7 +115,10 @@ async fn clear_folder(Path(uuid): Path<String>) -> Response {
             if message == "Cannot clear a locked save folder" {
                 return error_response(StatusCode::FORBIDDEN, &message);
             }
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to clear save folder")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to clear save folder",
+            )
         }
     }
 }
@@ -122,7 +134,10 @@ async fn remove_folder(Path(uuid): Path<String>) -> Response {
             if message == "Save folder not found" {
                 return error_response(StatusCode::NOT_FOUND, &message);
             }
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to delete save folder")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to delete save folder",
+            )
         }
     }
 }
@@ -150,7 +165,10 @@ async fn folder_games(Path(uuid): Path<String>) -> Response {
             if message == "Save folder not found" {
                 return error_response(StatusCode::NOT_FOUND, &message);
             }
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to fetch games in save folder")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to fetch games in save folder",
+            )
         }
     }
 }
@@ -170,7 +188,10 @@ async fn remove_game_saves(Path((uuid, game_id)): Path<(String, String)>) -> Res
             if message == "Cannot delete saves from a locked save folder" {
                 return error_response(StatusCode::FORBIDDEN, &message);
             }
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to delete game saves")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to delete game saves",
+            )
         }
     }
 }

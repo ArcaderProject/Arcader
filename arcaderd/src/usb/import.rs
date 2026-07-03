@@ -17,8 +17,16 @@ fn existing_sha_to_id() -> HashMap<String, String> {
     let rows = query_json("SELECT id, filename FROM roms", &[]);
     let mut map = HashMap::new();
     for row in rows {
-        let id = row.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
-        let filename = row.get("filename").and_then(|v| v.as_str()).unwrap_or_default().to_string();
+        let id = row
+            .get("id")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
+        let filename = row
+            .get("filename")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
         if id.is_empty() || filename.is_empty() {
             continue;
         }
@@ -53,12 +61,19 @@ fn import_games(mountpoint: &Path, mut sha_to_id: HashMap<String, String>) -> Im
     for (i, meta_path) in json_files.iter().enumerate() {
         emit_progress("games", i, total);
 
-        let meta: Value = match fs::read_to_string(meta_path).ok().and_then(|s| serde_json::from_str(&s).ok()) {
+        let meta: Value = match fs::read_to_string(meta_path)
+            .ok()
+            .and_then(|s| serde_json::from_str(&s).ok())
+        {
             Some(v) => v,
             None => continue,
         };
 
-        let sha = meta.get("sha").and_then(|v| v.as_str()).unwrap_or_default().to_string();
+        let sha = meta
+            .get("sha")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
         if sha.is_empty() {
             continue;
         }
@@ -67,9 +82,20 @@ fn import_games(mountpoint: &Path, mut sha_to_id: HashMap<String, String>) -> Im
             continue;
         }
 
-        let name = meta.get("name").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string();
-        let extension = meta.get("extension").and_then(|v| v.as_str()).unwrap_or_default().to_string();
-        let core = meta.get("core").and_then(|v| v.as_str()).map(|s| s.to_string());
+        let name = meta
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("Unknown")
+            .to_string();
+        let extension = meta
+            .get("extension")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
+        let core = meta
+            .get("core")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
         let has_cover = meta.get("cover").and_then(|v| v.as_bool()).unwrap_or(false);
 
         let rom_src = games_dir.join(format!("{}.rom", sha));
@@ -86,7 +112,13 @@ fn import_games(mountpoint: &Path, mut sha_to_id: HashMap<String, String>) -> Im
         let mut cover_flag = 0i64;
         if has_cover {
             let cover_src = games_dir.join(format!("{}.cover.jpg", sha));
-            if cover_src.exists() && fs::copy(&cover_src, local_covers_dir().join(format!("{}.jpg", new_id))).is_ok() {
+            if cover_src.exists()
+                && fs::copy(
+                    &cover_src,
+                    local_covers_dir().join(format!("{}.jpg", new_id)),
+                )
+                .is_ok()
+            {
                 cover_flag = 1;
             }
         }
@@ -101,7 +133,11 @@ fn import_games(mountpoint: &Path, mut sha_to_id: HashMap<String, String>) -> Im
     }
 
     emit_progress("games", total, total);
-    ImportedGames { added, duplicates, sha_to_id }
+    ImportedGames {
+        added,
+        duplicates,
+        sha_to_id,
+    }
 }
 
 fn import_lists(mountpoint: &Path, sha_to_id: &HashMap<String, String>) -> usize {
@@ -113,18 +149,34 @@ fn import_lists(mountpoint: &Path, sha_to_id: &HashMap<String, String>) -> usize
         None => return 0,
     };
 
-    let lists = doc.get("lists").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+    let lists = doc
+        .get("lists")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
     let mut created = 0;
 
     for list in &lists {
-        let name = list.get("name").and_then(|v| v.as_str()).unwrap_or_default().to_string();
+        let name = list
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
         if name.is_empty() {
             continue;
         }
-        let list_type = list.get("type").and_then(|v| v.as_str()).unwrap_or("exclude").to_string();
+        let list_type = list
+            .get("type")
+            .and_then(|v| v.as_str())
+            .unwrap_or("exclude")
+            .to_string();
 
         let list_id = match query_one_json("SELECT id FROM game_lists WHERE name = ?", &[&name]) {
-            Some(row) => row.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+            Some(row) => row
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string(),
             None => {
                 let id = random_hex_id();
                 execute(
@@ -149,7 +201,8 @@ fn import_lists(mountpoint: &Path, sha_to_id: &HashMap<String, String>) -> usize
     }
 
     if let Some(selected) = doc.get("selected").and_then(|v| v.as_str()) {
-        if let Some(row) = query_one_json("SELECT id FROM game_lists WHERE name = ?", &[&selected]) {
+        if let Some(row) = query_one_json("SELECT id FROM game_lists WHERE name = ?", &[&selected])
+        {
             if let Some(id) = row.get("id").and_then(|v| v.as_str()) {
                 set_config("selected_list_id", id);
             }
@@ -168,14 +221,28 @@ fn import_saves(mountpoint: &Path, sha_to_id: &HashMap<String, String>) -> usize
         .and_then(|v| v.as_array().cloned())
     {
         for folder in &folders {
-            let uuid = folder.get("uuid").and_then(|v| v.as_str()).unwrap_or_default().to_string();
+            let uuid = folder
+                .get("uuid")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string();
             if uuid.is_empty() {
                 continue;
             }
             if query_one_json("SELECT 1 FROM save_folders WHERE uuid = ?", &[&uuid]).is_none() {
-                let name = folder.get("name").and_then(|v| v.as_str()).unwrap_or("Imported").to_string();
-                let is_locked = folder.get("isLocked").and_then(|v| v.as_bool()).unwrap_or(false) as i64;
-                let is_default = folder.get("isDefault").and_then(|v| v.as_bool()).unwrap_or(false) as i64;
+                let name = folder
+                    .get("name")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Imported")
+                    .to_string();
+                let is_locked = folder
+                    .get("isLocked")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false) as i64;
+                let is_default = folder
+                    .get("isDefault")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false) as i64;
                 execute(
                     "INSERT INTO save_folders (uuid, name, isLocked, isActive, isDefault) VALUES (?, ?, ?, 0, ?)",
                     &[&uuid, &name, &is_locked, &is_default],
@@ -187,7 +254,11 @@ fn import_saves(mountpoint: &Path, sha_to_id: &HashMap<String, String>) -> usize
 
     let mut copied = 0;
     let folder_dirs = match fs::read_dir(&saves_root) {
-        Ok(e) => e.filter_map(Result::ok).map(|e| e.path()).filter(|p| p.is_dir()).collect::<Vec<_>>(),
+        Ok(e) => e
+            .filter_map(Result::ok)
+            .map(|e| e.path())
+            .filter(|p| p.is_dir())
+            .collect::<Vec<_>>(),
         Err(_) => Vec::new(),
     };
 
@@ -271,9 +342,21 @@ pub fn run_import(mountpoint: &Path, cats: &Categories) -> Result<Value, String>
         sha_to_id = result.sha_to_id;
     }
 
-    let lists = if cats.lists { import_lists(mountpoint, &sha_to_id) } else { 0 };
-    let saves = if cats.saves { import_saves(mountpoint, &sha_to_id) } else { 0 };
-    let settings = if cats.settings { import_settings(mountpoint) } else { 0 };
+    let lists = if cats.lists {
+        import_lists(mountpoint, &sha_to_id)
+    } else {
+        0
+    };
+    let saves = if cats.saves {
+        import_saves(mountpoint, &sha_to_id)
+    } else {
+        0
+    };
+    let settings = if cats.settings {
+        import_settings(mountpoint)
+    } else {
+        0
+    };
 
     Ok(json!({
         "games_added": games_added,

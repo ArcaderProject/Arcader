@@ -13,7 +13,10 @@ use crate::coin::{
 async fn status() -> Response {
     let mut data = coin_status_value();
     if let Value::Object(ref mut map) = data {
-        map.insert("coinSlotEnabled".to_string(), Value::Bool(coin_slot_enabled()));
+        map.insert(
+            "coinSlotEnabled".to_string(),
+            Value::Bool(coin_slot_enabled()),
+        );
     }
     ok_json(data)
 }

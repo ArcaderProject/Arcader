@@ -13,12 +13,12 @@ use crate::daemon::socket::{broadcast_cover_updated, broadcast_games_updated};
 use crate::utils::archive::is_archive;
 use crate::utils::database::execute;
 use crate::utils::emulation::{get_cores_for_extension, get_current_game, start_by_filename, stop};
-use crate::utils::imports::{
-    cancel_import, complete_extract, complete_install, stash_archive, ImportError,
-};
 use crate::utils::games::{
     add_game, delete_game, get_all_games, get_cover_art_path, get_game_by_id, update_game_core,
     update_game_name, upload_cover_art,
+};
+use crate::utils::imports::{
+    cancel_import, complete_extract, complete_install, stash_archive, ImportError,
 };
 use crate::utils::loader::{download_cover_by_url, get_game_covers, lookup_game_id};
 
@@ -127,7 +127,10 @@ async fn finish_import(Path(token): Path<String>, body: Bytes) -> Response {
         }
         Err(ImportError::Message(message)) => {
             eprintln!("Error completing import: {}", message);
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to import archive")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to import archive",
+            )
         }
     }
 }
@@ -223,7 +226,10 @@ async fn upload_cover(Path(id): Path<String>, mut multipart: Multipart) -> Respo
         Ok(false) => error_response(StatusCode::NOT_FOUND, "Game not found"),
         Err(message) => {
             eprintln!("Error uploading cover art: {}", message);
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to upload cover art")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to upload cover art",
+            )
         }
     }
 }
@@ -246,7 +252,10 @@ async fn lookup_covers(Path(id): Path<String>) -> Response {
     let steam_game_id = match lookup_game_id(name).await {
         Ok(Some(id)) => id,
         Ok(None) => {
-            return error_response(StatusCode::NOT_FOUND, "No matching game found on SteamGridDB")
+            return error_response(
+                StatusCode::NOT_FOUND,
+                "No matching game found on SteamGridDB",
+            )
         }
         Err(message) => {
             eprintln!("Error looking up covers: {}", message);
@@ -284,7 +293,10 @@ async fn cover_from_url(Path(id): Path<String>, body: Bytes) -> Response {
 
     let success = download_cover_by_url(&cover_url, &id).await;
     if !success {
-        return error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to download cover");
+        return error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Failed to download cover",
+        );
     }
 
     execute("UPDATE roms SET cover_art = 1 WHERE id = ?", &[&id]);

@@ -25,10 +25,7 @@ pub fn apply_retro_arch_config_overrides(overrides: &HashMap<String, String>) {
     let config_path = retroarch_config_path();
 
     if !config_path.exists() {
-        eprintln!(
-            "RetroArch config file not found: {}",
-            config_path.display()
-        );
+        eprintln!("RetroArch config file not found: {}", config_path.display());
         return;
     }
 
@@ -70,8 +67,5 @@ pub fn apply_retro_arch_config_overrides(overrides: &HashMap<String, String>) {
     }
 
     let keys: Vec<&str> = overrides.keys().map(|s| s.as_str()).collect();
-    println!(
-        "Applied RetroArch config overrides: {}",
-        keys.join(", ")
-    );
+    println!("Applied RetroArch config overrides: {}", keys.join(", "));
 }

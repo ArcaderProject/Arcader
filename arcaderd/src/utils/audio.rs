@@ -7,7 +7,11 @@ pub fn set_volume(percent: i64) {
         .args(["set-sink-mute", "@DEFAULT_SINK@", "0"])
         .status();
     let _ = std::process::Command::new("pactl")
-        .args(["set-sink-volume", "@DEFAULT_SINK@", &format!("{}%", percent)])
+        .args([
+            "set-sink-volume",
+            "@DEFAULT_SINK@",
+            &format!("{}%", percent),
+        ])
         .status();
 }
 

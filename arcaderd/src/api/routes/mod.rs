@@ -1,6 +1,7 @@
 pub mod apps;
 pub mod coin;
 pub mod config;
+pub mod controller_profiles;
 pub mod frontends;
 pub mod game_lists;
 pub mod games;

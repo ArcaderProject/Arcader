@@ -6,6 +6,7 @@ import {
 import Root from "@/common/layouts/Root.jsx";
 import { Library } from "@/pages/Library/Library";
 import { Lists } from "@/pages/Lists/Lists";
+import { ControllerProfiles } from "@/pages/ControllerProfiles/ControllerProfiles";
 import { Settings } from "@/pages/Settings/Settings";
 import { Storage } from "@/pages/Storage/Storage";
 import { Debug } from "@/pages/Debug/Debug";
@@ -20,6 +21,7 @@ const App = () => {
                 { path: "/library", element: <Library /> },
                 { path: "/games", element: <Navigate to="/library" /> },
                 { path: "/lists", element: <Lists /> },
+                { path: "/controllers", element: <ControllerProfiles /> },
                 { path: "/storage", element: <Storage /> },
                 { path: "/settings", element: <Settings /> },
                 { path: "/debug", element: <Debug /> },

@@ -51,7 +51,10 @@ async fn list_all() -> Response {
 async fn get_selected() -> Response {
     let selected_list_id = get_config(CONFIG_KEY, Some("default")).unwrap_or_default();
 
-    match query_one_json("SELECT * FROM game_lists WHERE id = ?", &[&selected_list_id]) {
+    match query_one_json(
+        "SELECT * FROM game_lists WHERE id = ?",
+        &[&selected_list_id],
+    ) {
         Some(list) => ok_json(map_to_value(list)),
         None => error_response(StatusCode::NOT_FOUND, "Selected list not found"),
     }
@@ -88,7 +91,10 @@ async fn create_list(body: Bytes) -> Response {
     };
 
     if list_type != "include" && list_type != "exclude" {
-        return error_response(StatusCode::BAD_REQUEST, "Type must be 'include' or 'exclude'");
+        return error_response(
+            StatusCode::BAD_REQUEST,
+            "Type must be 'include' or 'exclude'",
+        );
     }
 
     let id = random_hex_id();
@@ -134,10 +140,16 @@ async fn update_list(Path(id): Path<String>, body: Bytes) -> Response {
         Ok(_) => {}
         Err(message) => {
             if message.contains("UNIQUE constraint failed") {
-                return error_response(StatusCode::BAD_REQUEST, "A list with this name already exists");
+                return error_response(
+                    StatusCode::BAD_REQUEST,
+                    "A list with this name already exists",
+                );
             }
             eprintln!("Error updating game list: {}", message);
-            return error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to update game list");
+            return error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to update game list",
+            );
         }
     }
 
@@ -172,7 +184,10 @@ async fn get_list_games(Path(id): Path<String>) -> Response {
         None => return error_response(StatusCode::NOT_FOUND, "List not found"),
     };
 
-    let items = query_json("SELECT game_id FROM game_list_items WHERE list_id = ?", &[&id]);
+    let items = query_json(
+        "SELECT game_id FROM game_list_items WHERE list_id = ?",
+        &[&id],
+    );
     let game_ids: Vec<Value> = items
         .iter()
         .map(|item| item.get("game_id").cloned().unwrap_or(Value::Null))
@@ -196,11 +211,17 @@ async fn set_list_games(Path(id): Path<String>, body: Bytes) -> Response {
         None => return error_response(StatusCode::NOT_FOUND, "List not found"),
     };
     if is_default(&list) {
-        return error_response(StatusCode::FORBIDDEN, "Cannot edit games in the default list");
+        return error_response(
+            StatusCode::FORBIDDEN,
+            "Cannot edit games in the default list",
+        );
     }
 
     let inserted = with_transaction(|tx| {
-        tx.execute("DELETE FROM game_list_items WHERE list_id = ?", [id.as_str()])?;
+        tx.execute(
+            "DELETE FROM game_list_items WHERE list_id = ?",
+            [id.as_str()],
+        )?;
 
         let mut stmt =
             tx.prepare("INSERT INTO game_list_items (list_id, game_id) VALUES (?, ?)")?;
@@ -221,7 +242,10 @@ async fn set_list_games(Path(id): Path<String>, body: Bytes) -> Response {
         }
         Err(message) => {
             eprintln!("Error updating games in list: {}", message);
-            error_response(StatusCode::INTERNAL_SERVER_ERROR, "Failed to update games in list")
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to update games in list",
+            )
         }
     }
 }

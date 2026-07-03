@@ -46,8 +46,8 @@ pub fn stash_archive(original_filename: &str, buffer: &[u8]) -> Result<Value, St
     let archive_path = base.join(&safe_name);
     let extract_dir = base.join("extracted");
 
-    let entries = extract_to_entries(&archive_path, &extract_dir, &safe_name, buffer)
-        .inspect_err(|_| {
+    let entries =
+        extract_to_entries(&archive_path, &extract_dir, &safe_name, buffer).inspect_err(|_| {
             let _ = fs::remove_dir_all(&base);
         })?;
 

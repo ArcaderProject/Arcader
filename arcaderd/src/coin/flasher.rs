@@ -25,7 +25,9 @@ fn firmware_dir() -> Option<PathBuf> {
     }
     candidates.push(PathBuf::from("/usr/share/arcader/firmware"));
 
-    candidates.into_iter().find(|dir| dir.join(FIRMWARE_HEX_NAME).is_file())
+    candidates
+        .into_iter()
+        .find(|dir| dir.join(FIRMWARE_HEX_NAME).is_file())
 }
 
 pub fn firmware_hex_path() -> Option<PathBuf> {
@@ -90,14 +92,30 @@ pub fn flash(port_name: &str) -> bool {
     for baud in ["115200", "57600", "19200"] {
         println!("[coin] Flashing {} at {} baud...", port_name, baud);
         match Command::new(&avrdude)
-            .args(["-q", "-c", "arduino", "-p", "atmega328p", "-P", port_name, "-b", baud, "-D", "-U", &hex_arg])
+            .args([
+                "-q",
+                "-c",
+                "arduino",
+                "-p",
+                "atmega328p",
+                "-P",
+                port_name,
+                "-b",
+                baud,
+                "-D",
+                "-U",
+                &hex_arg,
+            ])
             .status()
         {
             Ok(s) if s.success() => {
                 println!("[coin] Flash succeeded at {} baud", baud);
                 return true;
             }
-            Ok(s) => eprintln!("[coin] avrdude exited with {} at {} baud, retrying", s, baud),
+            Ok(s) => eprintln!(
+                "[coin] avrdude exited with {} at {} baud, retrying",
+                s, baud
+            ),
             Err(error) => {
                 eprintln!("[coin] Failed to run avrdude: {}", error);
                 return false;
@@ -112,15 +130,24 @@ pub fn ensure_firmware(port_name: &str) -> bool {
     let expected = bundled_version();
     match (handshake(port_name), expected) {
         (Some(version), Some(expected)) if version >= expected => {
-            println!("[coin] {} runs firmware v{} (expected v{}); skipping flash", port_name, version, expected);
+            println!(
+                "[coin] {} runs firmware v{} (expected v{}); skipping flash",
+                port_name, version, expected
+            );
             true
         }
         (Some(version), None) => {
-            println!("[coin] {} runs firmware v{}; no bundled version, skipping flash", port_name, version);
+            println!(
+                "[coin] {} runs firmware v{}; no bundled version, skipping flash",
+                port_name, version
+            );
             true
         }
         (Some(version), Some(expected)) => {
-            println!("[coin] {} runs firmware v{}, bundled is v{}; reflashing", port_name, version, expected);
+            println!(
+                "[coin] {} runs firmware v{}, bundled is v{}; reflashing",
+                port_name, version, expected
+            );
             flash(port_name)
         }
         (None, _) => {

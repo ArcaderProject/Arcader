@@ -26,14 +26,20 @@ where
     while Instant::now() < deadline {
         let mut line = String::new();
         match reader.read_line(&mut line) {
-            Ok(0) => return Err(std::io::Error::new(ErrorKind::UnexpectedEof, "serial closed")),
+            Ok(0) => {
+                return Err(std::io::Error::new(
+                    ErrorKind::UnexpectedEof,
+                    "serial closed",
+                ))
+            }
             Ok(_) => {
                 let trimmed = line.trim();
                 if !trimmed.is_empty() {
                     on_line(trimmed);
                 }
             }
-            Err(ref e) if e.kind() == ErrorKind::TimedOut || e.kind() == ErrorKind::Interrupted => {}
+            Err(ref e) if e.kind() == ErrorKind::TimedOut || e.kind() == ErrorKind::Interrupted => {
+            }
             Err(e) => return Err(e),
         }
     }

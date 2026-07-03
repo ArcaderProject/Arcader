@@ -88,11 +88,7 @@ pub fn are_cores_installed(cores_dir: &Path) -> bool {
         .map(|entries| {
             entries
                 .filter_map(Result::ok)
-                .filter(|e| {
-                    e.file_name()
-                        .to_string_lossy()
-                        .ends_with("_libretro.so")
-                })
+                .filter(|e| e.file_name().to_string_lossy().ends_with("_libretro.so"))
                 .count()
         })
         .unwrap_or(0);

@@ -70,7 +70,10 @@ pub fn send_error(handle: &ClientHandle, error_message: &str, request_id: Value)
 }
 
 pub async fn handle_message(handle: &ClientHandle, message: Value) {
-    let message_type = message.get("type").and_then(|v| v.as_str()).map(String::from);
+    let message_type = message
+        .get("type")
+        .and_then(|v| v.as_str())
+        .map(String::from);
     let request_id = message.get("requestId").cloned().unwrap_or(Value::Null);
     let data = message.get("data").cloned().unwrap_or(Value::Null);
 
@@ -159,7 +162,10 @@ pub async fn start_daemon_socket() {
 
         let client_id = generate_client_id();
         let (tx, mut rx) = mpsc::unbounded_channel::<String>();
-        CLIENTS.lock().unwrap().insert(client_id.clone(), tx.clone());
+        CLIENTS
+            .lock()
+            .unwrap()
+            .insert(client_id.clone(), tx.clone());
 
         let (mut read_half, mut write_half) = stream.into_split();
 
@@ -191,8 +197,7 @@ pub async fn start_daemon_socket() {
                             message_buffer.iter().position(|&b| b == b'\n')
                         {
                             let line: Vec<u8> = message_buffer.drain(..=newline_pos).collect();
-                            let complete_message =
-                                String::from_utf8_lossy(&line[..line.len() - 1]);
+                            let complete_message = String::from_utf8_lossy(&line[..line.len() - 1]);
 
                             if !complete_message.trim().is_empty() {
                                 match serde_json::from_str::<Value>(&complete_message) {

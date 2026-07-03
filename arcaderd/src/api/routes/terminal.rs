@@ -166,8 +166,10 @@ async fn handle_terminal_socket(socket: WebSocket) {
                 Message::Text(text) => {
                     if let Ok(Value::Object(map)) = serde_json::from_str::<Value>(&text) {
                         if map.get("type").and_then(|v| v.as_str()) == Some("resize") {
-                            let cols = map.get("cols").and_then(|v| v.as_u64()).unwrap_or(80) as u16;
-                            let rows = map.get("rows").and_then(|v| v.as_u64()).unwrap_or(24) as u16;
+                            let cols =
+                                map.get("cols").and_then(|v| v.as_u64()).unwrap_or(80) as u16;
+                            let rows =
+                                map.get("rows").and_then(|v| v.as_u64()).unwrap_or(24) as u16;
                             let _ = master.resize(PtySize {
                                 rows: rows.max(1),
                                 cols: cols.max(1),

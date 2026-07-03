@@ -108,6 +108,10 @@ fn build_app() -> Router {
         .nest("/apps", routes::apps::router())
         .nest("/frontends", routes::frontends::router())
         .nest("/lists", routes::game_lists::router())
+        .nest(
+            "/controller-profiles",
+            routes::controller_profiles::router(),
+        )
         .nest("/config", routes::config::router())
         .nest("/coin", routes::coin::router())
         .nest("/save-folders", routes::save_folders::router())

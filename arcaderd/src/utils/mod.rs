@@ -2,6 +2,7 @@ pub mod apps;
 pub mod archive;
 pub mod audio;
 pub mod config;
+pub mod controller_profiles;
 pub mod database;
 pub mod directory;
 pub mod download;

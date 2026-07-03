@@ -41,7 +41,11 @@ pub fn emit_progress(stage: &str, current: usize, total: usize) {
 }
 
 pub fn current_mountpoint() -> Option<PathBuf> {
-    CURRENT.lock().unwrap().as_ref().map(|s| s.mountpoint.clone())
+    CURRENT
+        .lock()
+        .unwrap()
+        .as_ref()
+        .map(|s| s.mountpoint.clone())
 }
 
 pub fn current_status() -> Value {
@@ -127,7 +131,11 @@ fn truthy(value: Option<&Value>) -> bool {
 
 fn detect_candidate() -> Option<Candidate> {
     let output = Command::new("lsblk")
-        .args(["-J", "-o", "NAME,PATH,TYPE,RM,HOTPLUG,MOUNTPOINT,FSTYPE,LABEL"])
+        .args([
+            "-J",
+            "-o",
+            "NAME,PATH,TYPE,RM,HOTPLUG,MOUNTPOINT,FSTYPE,LABEL",
+        ])
         .output()
         .ok()?;
     if !output.status.success() {
@@ -150,7 +158,11 @@ fn detect_candidate() -> Option<Candidate> {
 
         for part in parts {
             let kind = part.get("type").and_then(|v| v.as_str());
-            let has_fs = part.get("fstype").and_then(|v| v.as_str()).map(|s| !s.is_empty()).unwrap_or(false);
+            let has_fs = part
+                .get("fstype")
+                .and_then(|v| v.as_str())
+                .map(|s| !s.is_empty())
+                .unwrap_or(false);
             if (kind != Some("part") && kind != Some("disk")) || !has_fs {
                 continue;
             }
@@ -176,7 +188,11 @@ fn detect_candidate() -> Option<Candidate> {
                 .filter(|s| !s.is_empty())
                 .map(|s| s.to_string());
 
-            return Some(Candidate { device, label, mountpoint });
+            return Some(Candidate {
+                device,
+                label,
+                mountpoint,
+            });
         }
     }
 
@@ -217,7 +233,9 @@ fn mount(candidate: &Candidate) -> Result<UsbState, String> {
             });
         }
         if mp == Path::new(HELPER_MOUNTPOINT) && Path::new(MOUNT_HELPER).exists() {
-            let _ = Command::new("sudo").args([MOUNT_HELPER, "unmount"]).status();
+            let _ = Command::new("sudo")
+                .args([MOUNT_HELPER, "unmount"])
+                .status();
         } else {
             return Ok(UsbState {
                 device: candidate.device.clone(),
@@ -234,7 +252,13 @@ fn mount(candidate: &Candidate) -> Result<UsbState, String> {
             .output()
             .map_err(|e| e.to_string())?;
         if out.status.success() {
-            let mp = String::from_utf8_lossy(&out.stdout).trim().lines().last().unwrap_or("").trim().to_string();
+            let mp = String::from_utf8_lossy(&out.stdout)
+                .trim()
+                .lines()
+                .last()
+                .unwrap_or("")
+                .trim()
+                .to_string();
             if !mp.is_empty() {
                 return Ok(UsbState {
                     device: candidate.device.clone(),
@@ -244,7 +268,10 @@ fn mount(candidate: &Candidate) -> Result<UsbState, String> {
                 });
             }
         }
-        return Err(format!("helper mount failed: {}", String::from_utf8_lossy(&out.stderr)));
+        return Err(format!(
+            "helper mount failed: {}",
+            String::from_utf8_lossy(&out.stderr)
+        ));
     }
 
     let out = Command::new("udisksctl")
@@ -263,17 +290,24 @@ fn mount(candidate: &Candidate) -> Result<UsbState, String> {
             });
         }
     }
-    Err(format!("udisksctl mount failed: {}", String::from_utf8_lossy(&out.stderr)))
+    Err(format!(
+        "udisksctl mount failed: {}",
+        String::from_utf8_lossy(&out.stderr)
+    ))
 }
 
 fn unmount(state: &UsbState) {
     match state.method {
         MountMethod::Premounted => {}
         MountMethod::Helper => {
-            let _ = Command::new("sudo").args([MOUNT_HELPER, "unmount"]).status();
+            let _ = Command::new("sudo")
+                .args([MOUNT_HELPER, "unmount"])
+                .status();
         }
         MountMethod::Udisks => {
-            let _ = Command::new("udisksctl").args(["unmount", "-b", &state.device]).status();
+            let _ = Command::new("udisksctl")
+                .args(["unmount", "-b", &state.device])
+                .status();
         }
     }
 }

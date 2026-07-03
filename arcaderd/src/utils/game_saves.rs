@@ -93,7 +93,8 @@ pub fn get_all_save_folders() -> Vec<SaveFolder> {
 }
 
 pub fn get_save_folder(uuid: &str) -> Option<SaveFolder> {
-    query_one_json("SELECT * FROM save_folders WHERE uuid = ?", &[&uuid]).map(|row| folder_from_row(&row))
+    query_one_json("SELECT * FROM save_folders WHERE uuid = ?", &[&uuid])
+        .map(|row| folder_from_row(&row))
 }
 
 pub fn get_active_save_folder() -> Option<SaveFolder> {
@@ -194,7 +195,9 @@ pub fn clear_save_folder(uuid: &str) -> Result<ClearResult, String> {
                                     deleted_count += 1;
                                     println!("Deleted file: {}", file_path.display());
                                 }
-                                Err(e) => eprintln!("Failed to delete {}: {}", file_path.display(), e),
+                                Err(e) => {
+                                    eprintln!("Failed to delete {}: {}", file_path.display(), e)
+                                }
                             }
                         } else if stats.is_dir() {
                             match fs::remove_dir_all(&file_path) {
@@ -202,7 +205,9 @@ pub fn clear_save_folder(uuid: &str) -> Result<ClearResult, String> {
                                     deleted_count += 1;
                                     println!("Deleted directory: {}", file_path.display());
                                 }
-                                Err(e) => eprintln!("Failed to delete {}: {}", file_path.display(), e),
+                                Err(e) => {
+                                    eprintln!("Failed to delete {}: {}", file_path.display(), e)
+                                }
                             }
                         }
                     }

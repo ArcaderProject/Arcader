@@ -75,7 +75,8 @@ fn raw_base() -> String {
 }
 
 fn api_base() -> String {
-    std::env::var("ARCADER_GITHUB_API_BASE").unwrap_or_else(|_| "https://api.github.com".to_string())
+    std::env::var("ARCADER_GITHUB_API_BASE")
+        .unwrap_or_else(|_| "https://api.github.com".to_string())
 }
 
 fn github_client() -> reqwest::Client {
@@ -186,7 +187,11 @@ pub fn is_compatible(range: &str) -> bool {
 }
 
 fn format_frontend(mut row: Map<String, Value>, active_id: &str) -> Map<String, Value> {
-    let id = row.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let id = row
+        .get("id")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
     let args = row
         .get("entry_args")
         .and_then(|v| v.as_str())
@@ -195,7 +200,10 @@ fn format_frontend(mut row: Map<String, Value>, active_id: &str) -> Map<String, 
         .unwrap_or_else(|| Value::Array(vec![]));
     row.insert("entryArgs".to_string(), args);
     row.remove("entry_args");
-    row.insert("repoUrl".to_string(), row.get("repo_url").cloned().unwrap_or(Value::Null));
+    row.insert(
+        "repoUrl".to_string(),
+        row.get("repo_url").cloned().unwrap_or(Value::Null),
+    );
     row.remove("repo_url");
     row.insert(
         "installedVersion".to_string(),
@@ -219,7 +227,8 @@ pub fn get_all() -> Vec<Map<String, Value>> {
 
 pub fn get_by_id(id: &str) -> Option<Map<String, Value>> {
     let active = active_id();
-    query_one_json("SELECT * FROM frontends WHERE id = ?", &[&id]).map(|r| format_frontend(r, &active))
+    query_one_json("SELECT * FROM frontends WHERE id = ?", &[&id])
+        .map(|r| format_frontend(r, &active))
 }
 
 fn raw_by_id(id: &str) -> Option<Map<String, Value>> {
@@ -260,7 +269,11 @@ fn set_installed_version(id: &str, version: &str) {
 
 fn entry_for(id: &str) -> Option<(String, Vec<String>)> {
     let row = raw_by_id(id)?;
-    let entry = row.get("entry").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let entry = row
+        .get("entry")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
     if entry.is_empty() {
         return None;
     }
@@ -440,7 +453,10 @@ fn launch_command(cmd: &str) -> Option<tokio::process::Child> {
             Some(child)
         }
         Err(e) => {
-            eprintln!("[frontend] failed to launch custom command '{}': {}", cmd, e);
+            eprintln!(
+                "[frontend] failed to launch custom command '{}': {}",
+                cmd, e
+            );
             None
         }
     }
@@ -562,13 +578,22 @@ pub async fn bootstrap() {
             Err(e) => eprintln!("[frontend] install failed: {}", e),
         }
     } else if let Ok(status) = check_update(&active).await {
-        let newer = status.get("updateAvailable").and_then(|v| v.as_bool()).unwrap_or(false);
-        let compatible = status.get("compatible").and_then(|v| v.as_bool()).unwrap_or(false);
+        let newer = status
+            .get("updateAvailable")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let compatible = status
+            .get("compatible")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         if newer && compatible {
             println!(
                 "[frontend] updating '{}' to {}",
                 active,
-                status.get("latestVersion").and_then(|v| v.as_str()).unwrap_or("?")
+                status
+                    .get("latestVersion")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("?")
             );
             if install(&active).await.is_ok() {
                 restart();

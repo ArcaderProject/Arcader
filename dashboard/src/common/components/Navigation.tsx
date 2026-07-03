@@ -3,7 +3,7 @@ import { useContext, useState } from "react";
 import { AuthContext } from "@/common/contexts/AuthProvider.tsx";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Settings, LayoutGrid, LogOut, Menu, X, ListChecks, Save, Terminal } from "lucide-react";
+import { Settings, LayoutGrid, LogOut, Menu, X, ListChecks, Save, Terminal, Gamepad2 } from "lucide-react";
 import banner from "@/common/assets/banner.png";
 import { PacmanAnimation } from "./PacmanAnimation.tsx";
 
@@ -16,6 +16,7 @@ export const Navigation = () => {
     const navItems = [
         { to: "/library", icon: LayoutGrid, label: "Library" },
         { to: "/lists", icon: ListChecks, label: "Lists" },
+        { to: "/controllers", icon: Gamepad2, label: "Controllers" },
         { to: "/storage", icon: Save, label: "Storage" },
         { to: "/settings", icon: Settings, label: "Settings" },
         { to: "/debug", icon: Terminal, label: "System" },

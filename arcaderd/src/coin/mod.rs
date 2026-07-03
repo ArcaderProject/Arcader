@@ -49,10 +49,15 @@ pub fn coin_status_value() -> Value {
 pub fn coin_status_full() -> Value {
     let mut data = coin_status_value();
     if let Value::Object(ref mut map) = data {
-        map.insert("coinSlotEnabled".to_string(), Value::Bool(coin_slot_enabled()));
+        map.insert(
+            "coinSlotEnabled".to_string(),
+            Value::Bool(coin_slot_enabled()),
+        );
         map.insert(
             "konamiCodeEnabled".to_string(),
-            Value::Bool(get_config("coinScreen.konamiCodeEnabled", None).as_deref() == Some("true")),
+            Value::Bool(
+                get_config("coinScreen.konamiCodeEnabled", None).as_deref() == Some("true"),
+            ),
         );
         if let Some(msg) = get_config("coinScreen.insertMessage", None) {
             map.insert("insertMessage".to_string(), Value::from(msg));
@@ -158,9 +163,15 @@ pub fn selftest() {
         return;
     }
     for board in &boards {
-        println!("[coin] Candidate: {} (vid={:04x} pid={:04x})", board.port_name, board.vid, board.pid);
+        println!(
+            "[coin] Candidate: {} (vid={:04x} pid={:04x})",
+            board.port_name, board.vid, board.pid
+        );
         match flasher::handshake(&board.port_name) {
-            Some(version) => println!("[coin]   -> firmware v{} present; would skip if up to date", version),
+            Some(version) => println!(
+                "[coin]   -> firmware v{} present; would skip if up to date",
+                version
+            ),
             None => println!("[coin]   -> no Arcader firmware; would flash"),
         }
     }
@@ -170,7 +181,14 @@ pub fn force_flash() {
     match detect::find_candidate_boards().first() {
         Some(board) => {
             println!("[coin] Force-flashing {}", board.port_name);
-            println!("[coin] {}", if flasher::flash(&board.port_name) { "Flash OK" } else { "Flash FAILED" });
+            println!(
+                "[coin] {}",
+                if flasher::flash(&board.port_name) {
+                    "Flash OK"
+                } else {
+                    "Flash FAILED"
+                }
+            );
         }
         None => println!("[coin] No candidate boards detected; nothing to flash."),
     }
@@ -206,7 +224,10 @@ fn run_forever() {
             }
         };
 
-        println!("[coin] Found board on {} (vid={:04x} pid={:04x})", board.port_name, board.vid, board.pid);
+        println!(
+            "[coin] Found board on {} (vid={:04x} pid={:04x})",
+            board.port_name, board.vid, board.pid
+        );
         flasher::ensure_firmware(&board.port_name);
         reader::run(&board.port_name);
         std::thread::sleep(RESCAN_INTERVAL);

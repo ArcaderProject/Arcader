@@ -24,8 +24,12 @@ pub fn handle_get_coin_status(handle: &ClientHandle, request_id: Value) {
 }
 
 pub fn handle_set_free_play(handle: &ClientHandle, request_id: Value, data: Value) {
-    let enabled = data.get("enabled").and_then(|v| v.as_bool()).unwrap_or(false);
-    let konami_enabled = get_config("coinScreen.konamiCodeEnabled", None).as_deref() == Some("true");
+    let enabled = data
+        .get("enabled")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let konami_enabled =
+        get_config("coinScreen.konamiCodeEnabled", None).as_deref() == Some("true");
 
     if enabled && !konami_enabled {
         send_error(handle, "Free play (Konami code) is disabled", request_id);

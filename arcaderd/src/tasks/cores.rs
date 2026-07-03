@@ -3,7 +3,9 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::tasks::TaskResult;
-use crate::utils::directory::{are_cores_installed, ensure_data_directories, is_retro_arch_installed};
+use crate::utils::directory::{
+    are_cores_installed, ensure_data_directories, is_retro_arch_installed,
+};
 use crate::utils::download::{
     build_retro_arch_cores_url, download_file, extract_7z, get_system_architecture,
     wait_for_clock_sync, wait_for_internet, RETROARCH_VERSION,
@@ -39,7 +41,10 @@ fn verify_cores_installation(cores_dir: &Path) -> CoresVerification {
         .unwrap_or_default();
 
     let core_count = files.iter().filter(|f| f.ends_with("_libretro.so")).count();
-    let info_count = files.iter().filter(|f| f.ends_with("_libretro.info")).count();
+    let info_count = files
+        .iter()
+        .filter(|f| f.ends_with("_libretro.info"))
+        .count();
 
     let success = core_count > 0;
 

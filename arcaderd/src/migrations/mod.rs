@@ -21,6 +21,10 @@ const MIGRATIONS: &[(&str, &str)] = &[
         "0006-create-frontends",
         include_str!("sql/0006-create-frontends.sql"),
     ),
+    (
+        "0007-create-controller-profiles",
+        include_str!("sql/0007-create-controller-profiles.sql"),
+    ),
 ];
 
 fn ensure_migrations_table(conn: &Connection) -> rusqlite::Result<()> {

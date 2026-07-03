@@ -12,7 +12,9 @@ pub fn get() -> i64 {
 
 pub fn tick(seconds: i64) -> i64 {
     REMAINING_SECONDS
-        .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |v| Some((v - seconds).max(0)))
+        .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |v| {
+            Some((v - seconds).max(0))
+        })
         .unwrap_or(0);
     get()
 }

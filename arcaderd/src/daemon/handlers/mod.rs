@@ -1,5 +1,6 @@
 pub mod apps;
 pub mod coin;
+pub mod controller_config;
 pub mod cover;
 pub mod games;
 pub mod hello;
@@ -60,6 +61,14 @@ pub async fn dispatch(
         }
         overlay::EXIT_GAME_MESSAGE_TYPE => {
             overlay::handle_exit_game();
+            true
+        }
+        controller_config::CONFIG_SKIP_MESSAGE_TYPE => {
+            controller_config::handle_config_skip();
+            true
+        }
+        controller_config::CONFIG_CANCEL_MESSAGE_TYPE => {
+            controller_config::handle_config_cancel();
             true
         }
         usb::USB_STATUS_MESSAGE_TYPE => {

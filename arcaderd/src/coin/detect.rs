@@ -22,7 +22,11 @@ pub fn find_candidate_boards() -> Vec<DetectedBoard> {
         .into_iter()
         .filter_map(|port| match port.port_type {
             SerialPortType::UsbPort(UsbPortInfo { vid, pid, .. }) if is_known_vendor(vid) => {
-                Some(DetectedBoard { port_name: port.port_name, vid, pid })
+                Some(DetectedBoard {
+                    port_name: port.port_name,
+                    vid,
+                    pid,
+                })
             }
             _ => None,
         })
@@ -48,9 +52,10 @@ fn usb_ids_for_tty(dev_name: &str) -> Option<(u16, u16)> {
         .ok()?;
 
     for _ in 0..6 {
-        if let (Some(vid), Some(pid)) =
-            (read_hex_u16(&dir.join("idVendor")), read_hex_u16(&dir.join("idProduct")))
-        {
+        if let (Some(vid), Some(pid)) = (
+            read_hex_u16(&dir.join("idVendor")),
+            read_hex_u16(&dir.join("idProduct")),
+        ) {
             return Some((vid, pid));
         }
         dir = dir.parent()?.to_path_buf();
@@ -76,7 +81,11 @@ fn scan_sysfs() -> Vec<DetectedBoard> {
                 return None;
             }
             let (vid, pid) = usb_ids_for_tty(&name)?;
-            is_known_vendor(vid).then_some(DetectedBoard { port_name, vid, pid })
+            is_known_vendor(vid).then_some(DetectedBoard {
+                port_name,
+                vid,
+                pid,
+            })
         })
         .collect()
 }

@@ -24,10 +24,7 @@ pub fn connect_to_database() {
 }
 
 pub fn get_database() -> MutexGuard<'static, Connection> {
-    DB.get()
-        .expect("Database not initialized")
-        .lock()
-        .unwrap()
+    DB.get().expect("Database not initialized").lock().unwrap()
 }
 
 pub fn run_migrations() {

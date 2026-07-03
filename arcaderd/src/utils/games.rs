@@ -51,7 +51,10 @@ fn rom_path(filename: &str) -> PathBuf {
 }
 
 fn cover_path(game_id: &str) -> PathBuf {
-    cwd().join("data").join("covers").join(format!("{}.jpg", game_id))
+    cwd()
+        .join("data")
+        .join("covers")
+        .join(format!("{}.jpg", game_id))
 }
 
 pub fn add_game(
@@ -127,7 +130,10 @@ pub fn get_all_games() -> Vec<Map<String, Value>> {
 pub fn get_filtered_games() -> Vec<Map<String, Value>> {
     let selected_list_id = get_selected_list_id();
 
-    let list = query_one_json("SELECT * FROM game_lists WHERE id = ?", &[&selected_list_id]);
+    let list = query_one_json(
+        "SELECT * FROM game_lists WHERE id = ?",
+        &[&selected_list_id],
+    );
 
     let list = match list {
         Some(l) => l,
@@ -140,7 +146,11 @@ pub fn get_filtered_games() -> Vec<Map<String, Value>> {
     );
     let list_game_ids: HashSet<String> = items
         .iter()
-        .filter_map(|item| item.get("game_id").and_then(|v| v.as_str()).map(String::from))
+        .filter_map(|item| {
+            item.get("game_id")
+                .and_then(|v| v.as_str())
+                .map(String::from)
+        })
         .collect();
 
     let all_games = get_all_games();
@@ -175,11 +185,17 @@ pub fn get_game_by_id(game_id: &str) -> Option<Map<String, Value>> {
 }
 
 pub fn update_game_name(game_id: &str, new_name: &str) -> bool {
-    execute("UPDATE roms SET name = ? WHERE id = ?", &[&new_name, &game_id]) > 0
+    execute(
+        "UPDATE roms SET name = ? WHERE id = ?",
+        &[&new_name, &game_id],
+    ) > 0
 }
 
 pub fn update_game_core(game_id: &str, core_name: &str) -> bool {
-    execute("UPDATE roms SET core = ? WHERE id = ?", &[&core_name, &game_id]) > 0
+    execute(
+        "UPDATE roms SET core = ? WHERE id = ?",
+        &[&core_name, &game_id],
+    ) > 0
 }
 
 pub fn delete_game(game_id: &str) -> bool {

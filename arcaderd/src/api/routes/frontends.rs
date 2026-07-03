@@ -27,7 +27,12 @@ async fn add(body: Bytes) -> Response {
     let body = parse_body(&body);
     let url = match body.get("url").and_then(|v| v.as_str()) {
         Some(u) if !u.is_empty() => u.to_string(),
-        _ => return error_response(StatusCode::BAD_REQUEST, "A GitHub repository url is required"),
+        _ => {
+            return error_response(
+                StatusCode::BAD_REQUEST,
+                "A GitHub repository url is required",
+            )
+        }
     };
 
     match frontends::add_and_install(&url).await {
